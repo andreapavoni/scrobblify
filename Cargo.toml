@@ -6,3 +6,6 @@ members = [
 	"application",
 	"web"
 ]
+
+[profile.release]
+panic = "abort"

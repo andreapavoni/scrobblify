@@ -1,7 +1,10 @@
 [package]
-name = "db"
+name = "brainz-fm-db"
 version = "0.1.0"
+authors = ["Andrea Pavoni <andrea.pavoni@gmail.com>"]
 edition = "2021"
+rust-version = "1.63"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
