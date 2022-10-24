@@ -1,3 +1,7 @@
+pub use sea_orm;
+
+pub mod migrator;
+
 #[cfg(test)]
 mod tests {
     // use super::*;

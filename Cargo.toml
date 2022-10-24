@@ -1,11 +1,25 @@
-[workspace]
+[package]
+name = "scrobblify"
+description = "Personal, self-hosted Spotify auto-scrobbler or Last.fm compatible API."
+repository = "https://github.com/andreapavoni/scrobblify"
+keywords = ["spotify", "lastfm", "scrobbler", "gnufm", "librefm"]
+version = "0.1.0"
+authors = ["Andrea Pavoni <andrea.pavoni@gmail.com>"]
+edition = "2021"
+rust-version = "1.63"
+license = "MIT"
+license-file = "LICENSE"
+readme = "README.md"
+publish = false
 
-members = [
-	"domain",
-	"db",
-	"application",
-	"web"
-]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "scrobblify"
+path = "app/src/main.rs"
+
+[workspace]
+members = ["app", "db", "domain", "web"]
 
 [profile.release]
 panic = "abort"

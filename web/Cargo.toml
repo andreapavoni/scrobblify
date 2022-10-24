@@ -1,5 +1,5 @@
 [package]
-name = "brainz-fm-web"
+name = "scrobblify-web"
 version = "0.1.0"
 authors = ["Andrea Pavoni <andrea.pavoni@gmail.com>"]
 edition = "2021"
