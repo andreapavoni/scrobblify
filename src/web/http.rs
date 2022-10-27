@@ -50,26 +50,16 @@ pub async fn new_app() -> Graphul {
 
         let spotify = SpotifyClient::from_cache().await.unwrap();
         let recently_played = spotify.get_recently_played().await.unwrap();
+        let currently_playing = spotify.get_currently_playing().await;
 
-        return match spotify.get_currently_playing().await {
-            Ok(resp) => {
-                let currently_playing = format!("{:#?}", resp);
-                let recently_played = format!("{:#?}", recently_played);
+        let recently_played = format!("{:#?}", recently_played);
+        let currently_playing = format!("{:#?}", currently_playing);
 
-                HtmlTemplate(HomeTemplate {
-                    currently_playing,
-                    recently_played,
-                })
-                .into_response()
-            }
-
-            Err(err) => {
-                let template = ErrorTemplate {
-                    error: format!("Failed for {err}!"),
-                };
-                HtmlTemplate(template).into_response()
-            }
-        };
+        HtmlTemplate(HomeTemplate {
+            currently_playing,
+            recently_played,
+        })
+        .into_response()
     });
 
     app
