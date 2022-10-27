@@ -1,14 +1,13 @@
+use anyhow::Result;
 use chrono::Utc;
 use rspotify::{
-    model::{
-        AdditionalType, CurrentlyPlayingContext, CursorBasedPage, FullTrack, PlayHistory,
-        TimeLimits, TrackId,
-    },
+    model::{AdditionalType, TimeLimits, TrackId},
     prelude::*,
-    scopes, AuthCodeSpotify, ClientError, Config, Credentials, OAuth, Token,
+    scopes, AuthCodeSpotify, Config, Credentials, OAuth, Token,
 };
 use std::{env, fs, path::PathBuf};
-use tracing::log;
+
+use crate::domain::{CurrentPlayingTrack, HistoryPlayedTrack, TrackInfo};
 
 #[derive(Clone, Debug)]
 struct SpotifyClientConfig {
@@ -74,71 +73,65 @@ impl SpotifyClient {
         SpotifyClient(AuthCodeSpotify::with_config(creds, oauth, config))
     }
 
-    pub async fn from_cache() -> SpotifyClient {
-        let spotify = SpotifyClient::new().with_token().await;
+    pub async fn from_cache() -> Result<SpotifyClient> {
+        let spotify = SpotifyClient::new().with_token().await?;
+        spotify.0.refresh_token().await?;
 
-        spotify
-            .0
-            .refresh_token()
-            .await
-            .expect("couldn't refresh user token");
-
-        spotify
+        Ok(spotify)
     }
 
     pub fn has_auth() -> bool {
         get_cache_path().exists()
     }
 
-    async fn with_token(&self) -> Self {
-        let token = load_token_from_cache();
+    async fn with_token(&self) -> Result<Self> {
+        let token = load_token_from_cache()?;
         *self.0.token.lock().await.unwrap() = Some(token.clone());
 
-        self.clone()
+        Ok(self.clone())
     }
 
     // Auth
-    pub async fn get_auth_url(&self) -> String {
-        self.0.get_authorize_url(true).unwrap()
+    pub async fn get_auth_url(&self) -> Result<String> {
+        let auth_url = self.0.get_authorize_url(true)?;
+        Ok(auth_url)
     }
 
-    pub async fn get_auth_token(&mut self, code: &str) {
-        match self.0.request_token(code).await {
-            Ok(_) => {
-                // this is the token, we might store it on db rather than on json file?
-                // self.0.load_token().lock().await.unwrap().clone().unwrap()
-            }
-            Err(err) => {
-                log::error!("Failed to get user token {:?}", err);
-            }
-        }
+    pub async fn get_auth_token(&mut self, code: &str) -> Result<()> {
+        self.0.request_token(code).await?;
+        Ok(())
     }
 
     // API
-    pub async fn get_currently_playing(
-        &self,
-    ) -> Result<Option<CurrentlyPlayingContext>, ClientError> {
+    pub async fn get_currently_playing(&self) -> Result<CurrentPlayingTrack> {
         self.0
             .current_playing(None, Some(&[AdditionalType::Track]))
-            .await
+            .await?
+            .try_into()
     }
 
-    pub async fn get_recently_played(&self) -> Result<CursorBasedPage<PlayHistory>, ClientError> {
+    pub async fn get_recently_played(&self) -> Result<Vec<HistoryPlayedTrack>> {
         let time_limit = TimeLimits::Before(Utc::now());
 
-        self.0
+        let items = self
+            .0
             .current_user_recently_played(Some(20), Some(time_limit))
-            .await
+            .await?
+            .items;
+
+        Ok(items.into_iter().map(|ph| ph.try_into().unwrap()).collect())
     }
 
-    pub async fn get_track(&self, track_id: &str) -> Result<FullTrack, ClientError> {
-        self.0.track(&TrackId::from_id(track_id).unwrap()).await
+    pub async fn get_track(&self, track_id: &str) -> Result<TrackInfo> {
+        let track_info: TrackInfo = self.0.track(&TrackId::from_id(track_id)?).await?.into();
+
+        Ok(track_info)
     }
 }
 
-fn load_token_from_cache() -> Token {
+fn load_token_from_cache() -> Result<Token> {
     let cache_path = get_or_create_cache_path();
-    Token::from_cache(cache_path).unwrap()
+    Ok(Token::from_cache(cache_path)?)
 }
 
 fn get_cache_path() -> PathBuf {

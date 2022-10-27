@@ -1,9 +1,5 @@
-#[cfg(test)]
-mod tests {
-    // use super::*;
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
+pub mod errors;
+pub mod models;
+
+pub use errors::*;
+pub use models::*;

@@ -44,6 +44,10 @@ sea-orm-migration = { version = "^0.9.0", features = [
   "runtime-tokio-native-tls",
   "sqlx-sqlite",
 ] }
+# Errors
+thiserror = "1.0"
+# Results
+anyhow = "1.0"
 # Date and time
 chrono = { version = "0.4", features = ["serde"] }
 # Logging & tracing

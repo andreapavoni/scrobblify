@@ -16,6 +16,7 @@ struct AuthorizeTemplate {
 #[template(path = "index.html")]
 struct HomeTemplate {
     currently_playing: String,
+    recently_played: String,
 }
 
 #[derive(Template)]
@@ -33,7 +34,7 @@ pub async fn new_app() -> Graphul {
         let mut spotify = SpotifyClient::new();
 
         // OAuth2 step 3: fetch the token/refresh for API requests
-        spotify.get_auth_token(code.as_str()).await;
+        let _ = spotify.get_auth_token(code.as_str()).await;
 
         return Redirect::to("/").into_response();
     });
@@ -41,24 +42,25 @@ pub async fn new_app() -> Graphul {
     app.get("/", |_c: Context| async move {
         if !SpotifyClient::has_auth() {
             let spotify = SpotifyClient::new();
-            let auth_url = spotify.get_auth_url().await;
+            let auth_url = spotify.get_auth_url().await.unwrap();
 
             // OAuth2 step 1: send user to Spotify auth page
-            let template = AuthorizeTemplate { auth_url };
-            return HtmlTemplate(template).into_response();
+            return HtmlTemplate(AuthorizeTemplate { auth_url }).into_response();
         }
 
-        let spotify = SpotifyClient::from_cache().await;
-
-        let recently_played = spotify.get_recently_played().await;
-        println!("RECENTLY PLAYED: {:#?}", recently_played);
+        let spotify = SpotifyClient::from_cache().await.unwrap();
+        let recently_played = spotify.get_recently_played().await.unwrap();
 
         return match spotify.get_currently_playing().await {
             Ok(resp) => {
                 let currently_playing = format!("{:#?}", resp);
+                let recently_played = format!("{:#?}", recently_played);
 
-                let template = HomeTemplate { currently_playing };
-                HtmlTemplate(template).into_response()
+                HtmlTemplate(HomeTemplate {
+                    currently_playing,
+                    recently_played,
+                })
+                .into_response()
             }
 
             Err(err) => {
