@@ -19,7 +19,7 @@ pub enum Relation {
         from = "Column::TrackId",
         to = "super::tracks::Column::Id",
         on_update = "NoAction",
-        on_delete = "Cascade"
+        on_delete = "NoAction"
     )]
     Tracks,
 }

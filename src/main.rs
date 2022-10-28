@@ -15,7 +15,7 @@ async fn main() {
     let app = new_app().await;
 
     let host = env::var("SCRUBBLIFY_HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
-    let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    let port = env::var("PORT").unwrap_or_else(|_| "8000".to_string());
     let addr = format!("{}:{}", host, port);
     app.run(addr.as_str()).await;
 }

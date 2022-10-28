@@ -39,6 +39,7 @@ impl MigrationTrait for Migration {
                             .table(ArtistsTracks::Table)
                             .col(ArtistsTracks::ArtistId)
                             .col(ArtistsTracks::TrackId)
+                            .primary()
                             .unique(),
                     )
                     .to_owned(),

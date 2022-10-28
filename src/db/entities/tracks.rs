@@ -15,6 +15,10 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::scrobbles::Entity")]
     Scrobbles,
+    #[sea_orm(has_many = "super::artists_tracks::Entity")]
+    ArtistsTracks,
+    #[sea_orm(has_many = "super::albums_tracks::Entity")]
+    AlbumsTracks,
 }
 
 impl Related<super::scrobbles::Entity> for Entity {
@@ -23,23 +27,15 @@ impl Related<super::scrobbles::Entity> for Entity {
     }
 }
 
-impl Related<super::artists::Entity> for Entity {
+impl Related<super::artists_tracks::Entity> for Entity {
     fn to() -> RelationDef {
-        super::artists_tracks::Relation::Artists.def()
-    }
-
-    fn via() -> Option<RelationDef> {
-        Some(super::artists_tracks::Relation::Tracks.def().rev())
+        Relation::ArtistsTracks.def()
     }
 }
 
-impl Related<super::albums::Entity> for Entity {
+impl Related<super::albums_tracks::Entity> for Entity {
     fn to() -> RelationDef {
-        super::albums_tracks::Relation::Albums.def()
-    }
-
-    fn via() -> Option<RelationDef> {
-        Some(super::albums_tracks::Relation::Tracks.def().rev())
+        Relation::AlbumsTracks.def()
     }
 }
 
