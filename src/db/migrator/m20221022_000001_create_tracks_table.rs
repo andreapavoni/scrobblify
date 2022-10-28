@@ -16,13 +16,7 @@ impl MigrationTrait for Migration {
             .create_table(
                 Table::create()
                     .table(Tracks::Table)
-                    .col(
-                        ColumnDef::new(Tracks::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
+                    .col(ColumnDef::new(Tracks::Id).string().not_null().primary_key())
                     .col(ColumnDef::new(Tracks::Title).string().not_null())
                     .col(ColumnDef::new(Tracks::Length).integer().not_null())
                     .to_owned(),

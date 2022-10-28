@@ -18,9 +18,8 @@ impl MigrationTrait for Migration {
                     .table(Artists::Table)
                     .col(
                         ColumnDef::new(Artists::Id)
-                            .integer()
+                            .string()
                             .not_null()
-                            .auto_increment()
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Artists::Name).string().not_null())

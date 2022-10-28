@@ -6,10 +6,10 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "scrobbles")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub timestamp: i32,
+    pub timestamp: String,
     pub origin: String,
     pub duration: i32,
-    pub track_id: i32,
+    pub track_id: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

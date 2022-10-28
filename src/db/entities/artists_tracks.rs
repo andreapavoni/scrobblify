@@ -5,8 +5,8 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
 #[sea_orm(table_name = "artists_tracks")]
 pub struct Model {
-    pub track_id: i32,
-    pub artist_id: i32,
+    pub track_id: String,
+    pub artist_id: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

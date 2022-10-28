@@ -20,13 +20,13 @@ impl MigrationTrait for Migration {
                     .table(Scrobbles::Table)
                     .col(
                         ColumnDef::new(Scrobbles::Timestamp)
-                            .integer()
+                            .timestamp()
                             .not_null()
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Scrobbles::Origin).string().not_null())
                     .col(ColumnDef::new(Scrobbles::Duration).integer().not_null())
-                    .col(ColumnDef::new(Scrobbles::TrackId).integer().not_null())
+                    .col(ColumnDef::new(Scrobbles::TrackId).string().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-scrobbles-track_id")

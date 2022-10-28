@@ -19,14 +19,14 @@ impl MigrationTrait for Migration {
             .create_table(
                 Table::create()
                     .table(ArtistsTracks::Table)
-                    .col(ColumnDef::new(ArtistsTracks::TrackId).integer().not_null())
+                    .col(ColumnDef::new(ArtistsTracks::TrackId).string().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-artists-tracks-track_id")
                             .from(ArtistsTracks::Table, ArtistsTracks::TrackId)
                             .to(Tracks::Table, Tracks::Id),
                     )
-                    .col(ColumnDef::new(ArtistsTracks::ArtistId).integer().not_null())
+                    .col(ColumnDef::new(ArtistsTracks::ArtistId).string().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-artists-tracks-artist_id")
