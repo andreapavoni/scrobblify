@@ -17,7 +17,7 @@ pub enum Relation {
         belongs_to = "super::albums::Entity",
         from = "Column::AlbumId",
         to = "super::albums::Column::Id",
-        on_update = "Cascade",
+        on_update = "NoAction",
         on_delete = "Cascade"
     )]
     Albums,
@@ -25,7 +25,7 @@ pub enum Relation {
         belongs_to = "super::tracks::Entity",
         from = "Column::TrackId",
         to = "super::tracks::Column::Id",
-        on_update = "Cascade",
+        on_update = "NoAction",
         on_delete = "Cascade"
     )]
     Tracks,
