@@ -25,7 +25,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Scrobbles::Origin).string().not_null())
-                    .col(ColumnDef::new(Scrobbles::Duration).integer().not_null())
+                    .col(ColumnDef::new(Scrobbles::DurationSecs).float().not_null())
                     .col(ColumnDef::new(Scrobbles::TrackId).string().not_null())
                     .foreign_key(
                         ForeignKey::create()
@@ -51,6 +51,6 @@ pub enum Scrobbles {
     Table,
     Timestamp,
     Origin,
-    Duration,
+    DurationSecs,
     TrackId,
 }

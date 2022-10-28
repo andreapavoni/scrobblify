@@ -5,7 +5,14 @@
 //     source: anyhow::Error,
 // }
 
-pub type SpotifyResult<T> = Result<T, SpotifyError>;
+#[derive(thiserror::Error, Debug)]
+#[error("Something went wrong.")]
+pub struct DatabaseError {
+    #[from]
+    source: anyhow::Error,
+}
+
+// pub type SpotifyResult<T> = Result<T, SpotifyError>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum SpotifyError {

@@ -11,22 +11,25 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {
-    #[sea_orm(has_many = "super::artists_tracks::Entity")]
-    ArtistsTracks,
-    #[sea_orm(has_many = "super::albums_artists::Entity")]
-    AlbumsArtists,
-}
+pub enum Relation {}
 
-impl Related<super::artists_tracks::Entity> for Entity {
+impl Related<super::tracks::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ArtistsTracks.def()
+        super::artists_tracks::Relation::Tracks.def()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(super::artists_tracks::Relation::Artists.def().rev())
     }
 }
 
-impl Related<super::albums_artists::Entity> for Entity {
+impl Related<super::albums::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::AlbumsArtists.def()
+        super::albums_artists::Relation::Albums.def()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(super::albums_artists::Relation::Artists.def().rev())
     }
 }
 

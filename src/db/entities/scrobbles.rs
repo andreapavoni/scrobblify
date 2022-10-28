@@ -8,7 +8,7 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub timestamp: String,
     pub origin: String,
-    pub duration: i32,
+    pub duration_secs: f64,
     pub track_id: String,
 }
 

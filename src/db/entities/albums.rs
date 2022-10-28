@@ -7,26 +7,29 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
-    pub name: String,
+    pub title: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {
-    #[sea_orm(has_many = "super::albums_artists::Entity")]
-    AlbumsArtists,
-    #[sea_orm(has_many = "super::albums_tracks::Entity")]
-    AlbumsTracks,
-}
+pub enum Relation {}
 
-impl Related<super::albums_artists::Entity> for Entity {
+impl Related<super::artists::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::AlbumsArtists.def()
+        super::albums_artists::Relation::Artists.def()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(super::albums_artists::Relation::Albums.def().rev())
     }
 }
 
-impl Related<super::albums_tracks::Entity> for Entity {
+impl Related<super::tracks::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::AlbumsTracks.def()
+        super::albums_tracks::Relation::Tracks.def()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(super::albums_tracks::Relation::Albums.def().rev())
     }
 }
 

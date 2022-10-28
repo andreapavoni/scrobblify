@@ -17,7 +17,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Albums::Table)
                     .col(ColumnDef::new(Albums::Id).string().not_null().primary_key())
-                    .col(ColumnDef::new(Albums::Name).string().not_null())
+                    .col(ColumnDef::new(Albums::Title).string().not_null())
                     .to_owned(),
             )
             .await
@@ -35,5 +35,5 @@ impl MigrationTrait for Migration {
 pub enum Albums {
     Table,
     Id,
-    Name,
+    Title,
 }

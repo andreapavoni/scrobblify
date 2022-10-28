@@ -18,6 +18,7 @@ pub struct CurrentPlayingTrack {
 pub struct Track {
     pub id: String,
     pub title: String,
+    pub duration_secs: Duration,
 }
 
 #[derive(Clone, Debug)]

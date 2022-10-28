@@ -1,3 +1,5 @@
-pub use sea_orm;
-
+pub mod entities;
 pub mod migrator;
+pub mod repository;
+
+pub use sea_orm;

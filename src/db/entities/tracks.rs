@@ -8,17 +8,13 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
     pub title: String,
-    pub length: i32,
+    pub duration_secs: f64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::scrobbles::Entity")]
     Scrobbles,
-    #[sea_orm(has_many = "super::artists_tracks::Entity")]
-    ArtistsTracks,
-    #[sea_orm(has_many = "super::albums_tracks::Entity")]
-    AlbumsTracks,
 }
 
 impl Related<super::scrobbles::Entity> for Entity {
@@ -27,15 +23,23 @@ impl Related<super::scrobbles::Entity> for Entity {
     }
 }
 
-impl Related<super::artists_tracks::Entity> for Entity {
+impl Related<super::artists::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ArtistsTracks.def()
+        super::artists_tracks::Relation::Artists.def()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(super::artists_tracks::Relation::Tracks.def().rev())
     }
 }
 
-impl Related<super::albums_tracks::Entity> for Entity {
+impl Related<super::albums::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::AlbumsTracks.def()
+        super::albums_tracks::Relation::Albums.def()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(super::albums_tracks::Relation::Tracks.def().rev())
     }
 }
 
