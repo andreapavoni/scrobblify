@@ -3,33 +3,24 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "tracks")]
+#[sea_orm(table_name = "albums")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
-    pub title: String,
-    pub length: i32,
+    pub name: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::scrobbles::Entity")]
-    Scrobbles,
-    #[sea_orm(has_many = "super::artists_tracks::Entity")]
-    ArtistsTracks,
+    #[sea_orm(has_many = "super::albums_artists::Entity")]
+    AlbumsArtists,
     #[sea_orm(has_many = "super::albums_tracks::Entity")]
     AlbumsTracks,
 }
 
-impl Related<super::scrobbles::Entity> for Entity {
+impl Related<super::albums_artists::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Scrobbles.def()
-    }
-}
-
-impl Related<super::artists_tracks::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ArtistsTracks.def()
+        Relation::AlbumsArtists.def()
     }
 }
 

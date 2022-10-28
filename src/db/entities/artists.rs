@@ -14,11 +14,19 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::artists_tracks::Entity")]
     ArtistsTracks,
+    #[sea_orm(has_many = "super::albums_artists::Entity")]
+    AlbumsArtists,
 }
 
 impl Related<super::artists_tracks::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ArtistsTracks.def()
+    }
+}
+
+impl Related<super::albums_artists::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::AlbumsArtists.def()
     }
 }
 

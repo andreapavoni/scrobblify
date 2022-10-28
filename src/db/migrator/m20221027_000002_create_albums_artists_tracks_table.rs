@@ -1,7 +1,7 @@
 use sea_orm_migration::prelude::*;
 
-use super::m20221022_000001_create_albums_table::Albums;
 use super::m20221022_000003_create_artists_table::Artists;
+use super::m20221027_000001_create_albums_table::Albums;
 
 pub struct Migration;
 
@@ -37,7 +37,7 @@ impl MigrationTrait for Migration {
                         Index::create()
                             .name("idx-albums-artists-album_id-artist_id")
                             .table(AlbumsArtists::Table)
-                            .col(AlbumsAlbums::AlbumId)
+                            .col(AlbumsArtists::AlbumId)
                             .col(AlbumsArtists::ArtistId)
                             .unique(),
                     )

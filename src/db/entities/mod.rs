@@ -2,6 +2,9 @@
 
 pub mod prelude;
 
+pub mod albums;
+pub mod albums_artists;
+pub mod albums_tracks;
 pub mod artists;
 pub mod artists_tracks;
 pub mod scrobbles;

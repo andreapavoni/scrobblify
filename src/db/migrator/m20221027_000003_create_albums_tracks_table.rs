@@ -1,7 +1,7 @@
 use sea_orm_migration::prelude::*;
 
 use super::m20221022_000001_create_tracks_table::Tracks;
-use super::m20221022_000003_create_albums_table::Albums;
+use super::m20221027_000001_create_albums_table::Albums;
 
 pub struct Migration;
 
