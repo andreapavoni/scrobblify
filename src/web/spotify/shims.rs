@@ -3,7 +3,8 @@ use rspotify::model::{CurrentlyPlayingContext, PlayableItem, SimplifiedAlbum, Si
 use rspotify::model::{FullTrack, PlayHistory};
 
 use crate::domain::{
-    Album, Artist, CurrentPlayingTrack, HistoryPlayedTrack, SpotifyError, TrackInfo,
+    errors::SpotifyError,
+    models::{Album, Artist, CurrentPlayingTrack, HistoryPlayedTrack, TrackInfo},
 };
 
 impl TryFrom<Option<CurrentlyPlayingContext>> for CurrentPlayingTrack {
@@ -54,19 +55,32 @@ impl From<FullTrack> for TrackInfo {
         TrackInfo {
             id: ft.id.unwrap().as_ref().to_string(),
             title: ft.name,
-            album,
+            album: album.clone(),
             artists,
             duration_secs: ft.duration,
-            genres: vec![],
+            tags: vec![],
+            isrc: ft.external_ids.get("isrc").unwrap().to_string(),
+            cover: album.cover,
         }
     }
 }
 
 impl From<SimplifiedAlbum> for Album {
     fn from(sa: SimplifiedAlbum) -> Self {
+        let cover = sa
+            .images
+            .into_iter()
+            .find(|img| match img.height {
+                Some(640) => true,
+                _ => false,
+            })
+            .map(|img| img.url)
+            .unwrap_or_else(|| "".to_string());
+
         Album {
             id: sa.id.unwrap().as_ref().to_string(),
             title: sa.name,
+            cover,
         }
     }
 }

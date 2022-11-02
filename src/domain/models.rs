@@ -28,13 +28,16 @@ pub struct TrackInfo {
     pub album: Album,
     pub artists: Vec<Artist>,
     pub duration_secs: Duration,
-    pub genres: Vec<String>,
+    pub tags: Vec<String>,
+    pub isrc: String,
+    pub cover: String,
 }
 
 #[derive(Clone, Debug)]
 pub struct Album {
     pub id: String,
     pub title: String,
+    pub cover: String,
 }
 
 #[derive(Clone, Debug)]
@@ -43,6 +46,7 @@ pub struct AlbumInfo {
     pub title: String,
     pub artists: Vec<Artist>,
     pub tracks: Vec<Track>,
+    pub cover: String,
 }
 
 #[derive(Clone, Debug)]

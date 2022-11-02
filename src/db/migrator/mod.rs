@@ -8,6 +8,8 @@ mod m20221022_000004_create_artists_tracks_table;
 mod m20221027_000001_create_albums_table;
 mod m20221027_000002_create_albums_artists_tracks_table;
 mod m20221027_000003_create_albums_tracks_table;
+mod m20221101_000001_create_tags_table;
+mod m20221101_000002_create_tags_tracks_table;
 
 pub struct Migrator;
 
@@ -22,6 +24,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20221027_000001_create_albums_table::Migration),
             Box::new(m20221027_000002_create_albums_artists_tracks_table::Migration),
             Box::new(m20221027_000003_create_albums_tracks_table::Migration),
+            Box::new(m20221101_000001_create_tags_table::Migration),
+            Box::new(m20221101_000002_create_tags_tracks_table::Migration),
         ]
     }
 }

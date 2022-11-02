@@ -7,7 +7,7 @@ use rspotify::{
 };
 use std::{env, fs, path::PathBuf};
 
-use crate::domain::{CurrentPlayingTrack, HistoryPlayedTrack, TrackInfo};
+use crate::domain::models::{CurrentPlayingTrack, HistoryPlayedTrack, TrackInfo};
 
 #[derive(Clone, Debug)]
 struct SpotifyClientConfig {

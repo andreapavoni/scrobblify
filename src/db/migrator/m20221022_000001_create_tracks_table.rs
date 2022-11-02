@@ -19,6 +19,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Tracks::Id).string().not_null().primary_key())
                     .col(ColumnDef::new(Tracks::Title).string().not_null())
                     .col(ColumnDef::new(Tracks::DurationSecs).float().not_null())
+                    .col(ColumnDef::new(Tracks::Isrc).not_null().string())
                     .to_owned(),
             )
             .await
@@ -38,4 +39,5 @@ pub enum Tracks {
     Id,
     Title,
     DurationSecs,
+    Isrc,
 }

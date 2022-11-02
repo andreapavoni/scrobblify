@@ -18,6 +18,7 @@ impl MigrationTrait for Migration {
                     .table(Albums::Table)
                     .col(ColumnDef::new(Albums::Id).string().not_null().primary_key())
                     .col(ColumnDef::new(Albums::Title).string().not_null())
+                    .col(ColumnDef::new(Albums::Cover).string().not_null())
                     .to_owned(),
             )
             .await
@@ -36,4 +37,5 @@ pub enum Albums {
     Table,
     Id,
     Title,
+    Cover,
 }
