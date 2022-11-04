@@ -8,4 +8,6 @@ pub mod albums_tracks;
 pub mod artists;
 pub mod artists_tracks;
 pub mod scrobbles;
+pub mod tags;
+pub mod tags_tracks;
 pub mod tracks;

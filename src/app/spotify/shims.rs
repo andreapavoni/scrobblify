@@ -1,7 +1,10 @@
+use std::time::Duration;
+
 use anyhow::Result;
 use rspotify::model::{CurrentlyPlayingContext, PlayableItem, SimplifiedAlbum, SimplifiedArtist};
 use rspotify::model::{FullTrack, PlayHistory};
 
+use crate::domain::models::Track;
 use crate::domain::{
     errors::SpotifyError,
     models::{Album, Artist, CurrentPlayingTrack, HistoryPlayedTrack, TrackInfo},
@@ -13,23 +16,32 @@ impl TryFrom<Option<CurrentlyPlayingContext>> for CurrentPlayingTrack {
     fn try_from(opt_cpt: Option<CurrentlyPlayingContext>) -> Result<Self> {
         let cpt = match opt_cpt {
             Some(cpt) => cpt,
-            None => return Err(anyhow::Error::new(SpotifyError::TrackResponse)),
+            None => {
+                return Ok(CurrentPlayingTrack {
+                    track: None,
+                    timestamp: None,
+                    progress_secs: None,
+                })
+            }
         };
 
         let full_track: FullTrack = match cpt.item {
             Some(pi) => match pi {
                 PlayableItem::Track(ft) => ft,
-                PlayableItem::Episode(_) => {
-                    return Err(anyhow::Error::new(SpotifyError::TrackResponse))
-                }
+                _ => return Err(anyhow::Error::new(SpotifyError::TrackResponse)),
             },
             None => return Err(anyhow::Error::new(SpotifyError::TrackResponse)),
         };
 
+        let progress_secs = match cpt.progress {
+            Some(progress) => progress,
+            None => Duration::new(0, 0),
+        };
+
         Ok(CurrentPlayingTrack {
-            track: full_track.into(),
-            timestamp: cpt.timestamp,
-            progress_secs: cpt.progress.unwrap(),
+            track: Some(full_track.into()),
+            timestamp: Some(cpt.timestamp),
+            progress_secs: Some(progress_secs),
         })
     }
 }
@@ -61,6 +73,17 @@ impl From<FullTrack> for TrackInfo {
             tags: vec![],
             isrc: ft.external_ids.get("isrc").unwrap().to_string(),
             cover: album.cover,
+        }
+    }
+}
+
+impl From<TrackInfo> for Track {
+    fn from(track_info: TrackInfo) -> Self {
+        Track {
+            id: track_info.id,
+            title: track_info.title,
+            duration_secs: track_info.duration_secs,
+            isrc: track_info.isrc,
         }
     }
 }

@@ -1,13 +1,13 @@
 use anyhow::Result;
 use chrono::Utc;
 use rspotify::{
-    model::{AdditionalType, TimeLimits, TrackId},
+    model::{AdditionalType, TimeLimits},
     prelude::*,
     scopes, AuthCodeSpotify, Config, Credentials, OAuth, Token,
 };
 use std::{env, fs, path::PathBuf};
 
-use crate::domain::models::{CurrentPlayingTrack, HistoryPlayedTrack, TrackInfo};
+use crate::domain::models::{CurrentPlayingTrack, HistoryPlayedTrack};
 
 #[derive(Clone, Debug)]
 struct SpotifyClientConfig {
@@ -17,7 +17,15 @@ struct SpotifyClientConfig {
 }
 
 impl SpotifyClientConfig {
-    pub fn new() -> Self {
+    pub fn new(client_id: String, client_secret: String, auth_callback_uri: String) -> Self {
+        Self {
+            client_id,
+            client_secret,
+            auth_callback_uri,
+        }
+    }
+
+    pub fn new_from_env() -> Self {
         let client_id = match env::var_os("SCROBBLIFY_SPOTIFY_CLIENT_ID") {
             Some(v) => v.into_string().unwrap(),
             None => panic!("$SCROBBLIFY_SPOTIFY_CLIENT_ID is not set"),
@@ -45,8 +53,12 @@ impl SpotifyClientConfig {
 pub struct SpotifyClient(AuthCodeSpotify);
 
 impl SpotifyClient {
-    pub fn new() -> SpotifyClient {
-        let client_config = SpotifyClientConfig::new();
+    pub async fn new_from_env() -> Result<SpotifyClient> {
+        let client_config = SpotifyClientConfig::new_from_env();
+        Self::new(client_config).await
+    }
+
+    pub async fn new(client_config: SpotifyClientConfig) -> Result<SpotifyClient> {
         let creds = Credentials::new(
             client_config.client_id.as_str(),
             client_config.client_secret.as_str(),
@@ -70,17 +82,16 @@ impl SpotifyClient {
             ..Default::default()
         };
 
-        SpotifyClient(AuthCodeSpotify::with_config(creds, oauth, config))
+        let client = SpotifyClient(AuthCodeSpotify::with_config(creds, oauth, config));
+
+        if get_cache_path().exists() {
+            client.with_token().await
+        } else {
+            Ok(client)
+        }
     }
 
-    pub async fn from_cache() -> Result<SpotifyClient> {
-        let spotify = SpotifyClient::new().with_token().await?;
-        spotify.0.refresh_token().await?;
-
-        Ok(spotify)
-    }
-
-    pub fn has_auth() -> bool {
+    pub fn has_auth(&self) -> bool {
         get_cache_path().exists()
     }
 
@@ -120,12 +131,6 @@ impl SpotifyClient {
             .items;
 
         Ok(items.into_iter().map(|ph| ph.try_into().unwrap()).collect())
-    }
-
-    pub async fn get_track(&self, track_id: &str) -> Result<TrackInfo> {
-        let track_info: TrackInfo = self.0.track(&TrackId::from_id(track_id)?).await?.into();
-
-        Ok(track_info)
     }
 }
 

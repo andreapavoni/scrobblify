@@ -9,6 +9,7 @@ pub struct Model {
     pub id: String,
     pub title: String,
     pub duration_secs: f64,
+    pub isrc: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -19,6 +20,8 @@ pub enum Relation {
     ArtistsTracks,
     #[sea_orm(has_many = "super::albums_tracks::Entity")]
     AlbumsTracks,
+    #[sea_orm(has_many = "super::tags_tracks::Entity")]
+    TagsTracks,
 }
 
 impl Related<super::scrobbles::Entity> for Entity {
@@ -36,6 +39,12 @@ impl Related<super::artists_tracks::Entity> for Entity {
 impl Related<super::albums_tracks::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::AlbumsTracks.def()
+    }
+}
+
+impl Related<super::tags_tracks::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::TagsTracks.def()
     }
 }
 

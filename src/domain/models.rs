@@ -7,11 +7,18 @@ pub struct HistoryPlayedTrack {
     pub played_at: DateTime<Utc>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct CurrentPlayingTrack {
-    pub track: TrackInfo,
+    pub track: Option<TrackInfo>,
+    pub timestamp: Option<DateTime<Utc>>,
+    pub progress_secs: Option<Duration>,
+}
+
+#[derive(Clone, Debug)]
+pub struct Scrobble {
     pub timestamp: DateTime<Utc>,
-    pub progress_secs: Duration,
+    pub duration_secs: f64,
+    pub track: TrackInfo,
 }
 
 #[derive(Clone, Debug)]
@@ -19,6 +26,7 @@ pub struct Track {
     pub id: String,
     pub title: String,
     pub duration_secs: Duration,
+    pub isrc: String,
 }
 
 #[derive(Clone, Debug)]

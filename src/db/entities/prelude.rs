@@ -6,4 +6,6 @@ pub use super::albums_tracks::Entity as AlbumsTracks;
 pub use super::artists::Entity as Artists;
 pub use super::artists_tracks::Entity as ArtistsTracks;
 pub use super::scrobbles::Entity as Scrobbles;
+pub use super::tags::Entity as Tags;
+pub use super::tags_tracks::Entity as TagsTracks;
 pub use super::tracks::Entity as Tracks;
