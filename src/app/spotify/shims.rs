@@ -21,6 +21,7 @@ impl TryFrom<Option<CurrentlyPlayingContext>> for CurrentPlayingTrack {
                     track: None,
                     timestamp: None,
                     progress_secs: None,
+                    scrobbled: false,
                 })
             }
         };
@@ -42,6 +43,7 @@ impl TryFrom<Option<CurrentlyPlayingContext>> for CurrentPlayingTrack {
             track: Some(full_track.into()),
             timestamp: Some(cpt.timestamp),
             progress_secs: Some(progress_secs),
+            scrobbled: false,
         })
     }
 }

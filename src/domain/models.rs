@@ -12,6 +12,29 @@ pub struct CurrentPlayingTrack {
     pub track: Option<TrackInfo>,
     pub timestamp: Option<DateTime<Utc>>,
     pub progress_secs: Option<Duration>,
+    pub scrobbled: bool,
+}
+
+impl PartialEq for CurrentPlayingTrack {
+    fn eq(&self, other: &Self) -> bool {
+        if let None = self.track {
+            return false;
+        }
+
+        if let None = other.track {
+            return false;
+        }
+
+        return match (
+            self.timestamp,
+            other.timestamp,
+            self.track.as_ref(),
+            other.track.as_ref(),
+        ) {
+            (Some(a), Some(b), Some(ta), Some(tb)) => return a == b && ta.id == tb.id,
+            _ => false,
+        };
+    }
 }
 
 #[derive(Clone, Debug)]

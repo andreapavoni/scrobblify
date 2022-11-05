@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 
-use crate::domain::models::{CurrentPlayingTrack, Scrobble, TrackInfo};
+use crate::domain::models::{CurrentPlayingTrack, Scrobble};
 
 // # Spec
 // - [ ] As soon as a track has been played for 50% of its length or 4 minutes, it should be counted as a scrobble
@@ -21,6 +21,7 @@ pub enum ScrobblerResult {
     Ok(Scrobble),
     Cache,
     Ignore,
+    AlreadyScrobbled,
 }
 
 pub struct Scrobbler {}
@@ -30,18 +31,22 @@ impl Scrobbler {
         current: &CurrentPlayingTrack,
         cache: &CurrentPlayingTrack,
     ) -> ScrobblerResult {
+        if current == cache && cache.scrobbled {
+            return ScrobblerResult::AlreadyScrobbled;
+        }
         match (current.track.clone(), cache.track.as_ref()) {
             // maybe track has been playing for enough time, so we scrobble it
-            (Some(_), Some(_)) => {
+            (Some(current_track), Some(_)) => {
                 let timestamp = get_timestamp(&current, &cache);
                 if let Some(duration) = calculate_duration(&current, timestamp) {
-                    return ScrobblerResult::Ok(do_build_scrobble(
-                        duration,
+                    return ScrobblerResult::Ok(Scrobble {
                         timestamp,
-                        current.track.clone().unwrap(),
-                    ));
+                        duration_secs: duration as f64,
+                        track: current_track,
+                    });
                 }
-                return ScrobblerResult::Ignore;
+
+                return ScrobblerResult::Cache;
             }
             // the track has been playing for less than enough, let's keep it in memory
             // and maybe it will be eventually scrobbled later
@@ -53,19 +58,13 @@ impl Scrobbler {
 }
 
 fn get_timestamp(current: &CurrentPlayingTrack, cache: &CurrentPlayingTrack) -> DateTime<Utc> {
-    if current.track.clone().unwrap().id == cache.track.clone().unwrap().id {
-        cache.timestamp.unwrap()
-    } else {
-        current.timestamp.unwrap()
-    }
-}
+    let current_timestamp = current.timestamp.unwrap();
+    let cache_timestamp = cache.timestamp.unwrap();
 
-fn do_build_scrobble(duration: u64, timestamp: DateTime<Utc>, track: TrackInfo) -> Scrobble {
-    Scrobble {
-        timestamp,
-        duration_secs: duration as f64,
-        track: track.clone(),
+    if current == cache {
+        return cache_timestamp;
     }
+    current_timestamp
 }
 
 fn calculate_duration(current: &CurrentPlayingTrack, timestamp: DateTime<Utc>) -> Option<u64> {

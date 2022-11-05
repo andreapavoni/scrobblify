@@ -10,7 +10,7 @@ use std::{env, fs, path::PathBuf};
 use crate::domain::models::{CurrentPlayingTrack, HistoryPlayedTrack};
 
 #[derive(Clone, Debug)]
-struct SpotifyClientConfig {
+pub struct SpotifyClientConfig {
     client_id: String,
     client_secret: String,
     auth_callback_uri: String,

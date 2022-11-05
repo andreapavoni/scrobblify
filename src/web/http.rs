@@ -32,7 +32,7 @@ pub async fn new_app() -> Graphul {
     // OAuth2 step 2: user is redirected to callback with a `code`
     app.get("/auth/callback/", |c: Context| async move {
         let code = c.query("code");
-        let mut spotify = SpotifyClient::new().await.unwrap();
+        let mut spotify = SpotifyClient::new_from_env().await.unwrap();
 
         // OAuth2 step 3: fetch the token/refresh for API requests
         let _ = spotify.get_auth_token(code.as_str()).await;
@@ -41,7 +41,7 @@ pub async fn new_app() -> Graphul {
     });
 
     app.get("/", |_c: Context| async move {
-        let spotify = SpotifyClient::new().await.unwrap();
+        let spotify = SpotifyClient::new_from_env().await.unwrap();
 
         if !spotify.has_auth() {
             let auth_url = spotify.get_auth_url().await.unwrap();
