@@ -17,11 +17,11 @@ pub struct CurrentPlayingTrack {
 
 impl PartialEq for CurrentPlayingTrack {
     fn eq(&self, other: &Self) -> bool {
-        if let None = self.track {
+        if self.track.is_none() {
             return false;
         }
 
-        if let None = other.track {
+        if other.track.is_none() {
             return false;
         }
 

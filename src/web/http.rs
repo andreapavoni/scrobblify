@@ -5,7 +5,7 @@ use graphul::{
     Context, Graphul, IntoResponse,
 };
 
-use crate::app::spotify::SpotifyClient;
+use crate::core::spotify::SpotifyClient;
 
 #[derive(Template)]
 #[template(path = "authorize.html")]
@@ -37,7 +37,7 @@ pub async fn new_app() -> Graphul {
         // OAuth2 step 3: fetch the token/refresh for API requests
         let _ = spotify.get_auth_token(code.as_str()).await;
 
-        return Redirect::to("/").into_response();
+        Redirect::to("/").into_response()
     });
 
     app.get("/", |_c: Context| async move {

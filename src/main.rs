@@ -4,7 +4,7 @@ use tokio::sync::Mutex;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use scrobblify::{
-    app::{spotify::SpotifyClient, start_scrobbling, App},
+    core::{spotify::SpotifyClient, start_scrobbling, App},
     db::repository::Repository,
     web::http::new_app,
 };

@@ -27,11 +27,8 @@ impl TryFrom<Option<CurrentlyPlayingContext>> for CurrentPlayingTrack {
         };
 
         let full_track: FullTrack = match cpt.item {
-            Some(pi) => match pi {
-                PlayableItem::Track(ft) => ft,
-                _ => return Err(anyhow::Error::new(SpotifyError::TrackResponse)),
-            },
-            None => return Err(anyhow::Error::new(SpotifyError::TrackResponse)),
+            Some(PlayableItem::Track(ft)) => ft,
+            _ => return Err(anyhow::Error::new(SpotifyError::TrackResponse)),
         };
 
         let progress_secs = match cpt.progress {
@@ -95,10 +92,7 @@ impl From<SimplifiedAlbum> for Album {
         let cover = sa
             .images
             .into_iter()
-            .find(|img| match img.height {
-                Some(640) => true,
-                _ => false,
-            })
+            .find(|img| matches!(img.height, Some(640)))
             .map(|img| img.url)
             .unwrap_or_else(|| "".to_string());
 

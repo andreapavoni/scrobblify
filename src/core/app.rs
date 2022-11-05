@@ -34,17 +34,22 @@ impl domain::app::App for App {
     async fn scrobble(&self, scrobble: Scrobble) -> Result<()> {
         let track_info = scrobble.track;
 
-        if let None = self.db.get_track_by_id(track_info.id.clone()).await? {
+        if (self.db.get_track_by_id(track_info.id.clone()).await?).is_none() {
             self.db.insert_track(track_info.clone().into()).await?;
         }
 
         for artist in track_info.artists.iter() {
-            if let None = self.db.get_artist_by_id(artist.id.clone()).await? {
+            if self.db.get_artist_by_id(artist.id.clone()).await?.is_none() {
                 self.db.insert_artist(artist.clone()).await?;
             }
         }
 
-        if let None = self.db.get_album_by_id(track_info.album.id.clone()).await? {
+        if self
+            .db
+            .get_album_by_id(track_info.album.id.clone())
+            .await?
+            .is_none()
+        {
             self.db.insert_album(track_info.album.clone()).await?;
         }
 

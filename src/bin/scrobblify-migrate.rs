@@ -4,9 +4,8 @@ use std::env;
 
 #[tokio::main]
 async fn main() {
-    match env::var_os("DATABASE_URL") {
-        None => panic!("$DATABASE_URL is not set"),
-        _ => {}
+    if env::var_os("DATABASE_URL") == None {
+        panic!("$DATABASE_URL is not set")
     }
     cli::run_cli(migrator::Migrator).await;
 }

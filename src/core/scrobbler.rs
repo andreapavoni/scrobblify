@@ -37,8 +37,8 @@ impl Scrobbler {
         match (current.track.clone(), cache.track.as_ref()) {
             // maybe track has been playing for enough time, so we scrobble it
             (Some(current_track), Some(_)) => {
-                let timestamp = get_timestamp(&current, &cache);
-                if let Some(duration) = calculate_duration(&current, timestamp) {
+                let timestamp = get_timestamp(current, cache);
+                if let Some(duration) = calculate_duration(current, timestamp) {
                     return ScrobblerResult::Ok(Scrobble {
                         timestamp,
                         duration_secs: duration as f64,
@@ -46,13 +46,13 @@ impl Scrobbler {
                     });
                 }
 
-                return ScrobblerResult::Cache;
+                ScrobblerResult::Cache
             }
             // the track has been playing for less than enough, let's keep it in memory
             // and maybe it will be eventually scrobbled later
-            (Some(_), None) => return ScrobblerResult::Cache,
+            (Some(_), None) => ScrobblerResult::Cache,
             // nothing is currently playing, move on
-            _ => return ScrobblerResult::Ignore,
+            _ => ScrobblerResult::Ignore,
         }
     }
 }
