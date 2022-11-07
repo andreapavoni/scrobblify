@@ -59,9 +59,14 @@ pub struct TrackInfo {
     pub album: Album,
     pub artists: Vec<Artist>,
     pub duration_secs: Duration,
-    pub tags: Vec<String>,
+    pub tags: Vec<Tag>,
     pub isrc: String,
     pub cover: String,
+}
+
+#[derive(Clone, Debug)]
+pub struct Tag {
+    pub id: String,
 }
 
 #[derive(Clone, Debug)]

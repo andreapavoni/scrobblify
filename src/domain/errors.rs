@@ -27,3 +27,13 @@ pub enum SpotifyError {
     #[error("Failed to parse track response")]
     TrackResponse,
 }
+
+#[derive(thiserror::Error, Debug)]
+pub enum LastfmError {
+    #[error("Error from API")]
+    Api,
+    #[error("Failed to fetch track tags")]
+    TrackTagsResponse(#[from] reqwest_middleware::Error),
+    #[error("Failed to parse track tags json response")]
+    TrackTagsJsonParse(String),
+}

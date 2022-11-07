@@ -1,5 +1,7 @@
 pub mod app;
-mod scrobbler;
+pub mod lastfm;
 pub mod spotify;
+
+mod scrobbler;
 
 pub use app::*;
