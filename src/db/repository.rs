@@ -1,20 +1,27 @@
 use anyhow::Result;
 use chrono::Utc;
-use sea_orm::{ActiveModelTrait, ActiveValue, Database, DatabaseConnection, EntityTrait};
+use sea_orm::{
+    sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, EntityTrait,
+};
 use std::{env, time::Duration};
 
-use crate::db::entities::{
-    albums::{ActiveModel as AlbumsModel, Entity as AlbumSchema},
-    albums_artists::ActiveModel as AlbumsArtistsModel,
-    albums_tracks::ActiveModel as AlbumsTracksModel,
-    artists::{ActiveModel as ArtistsModel, Entity as ArtistSchema},
-    artists_tracks::ActiveModel as ArtistsTracksModel,
-    scrobbles::ActiveModel as ScrobblesModel,
-    tracks::{ActiveModel as TracksModel, Entity as TrackSchema},
-};
 use crate::domain::{
     self,
     models::{Album, Artist, Track, TrackInfo},
+};
+use crate::{
+    db::entities::{
+        albums::{self, ActiveModel as AlbumsModel, Entity as AlbumEntity},
+        albums_artists::{self, ActiveModel as AlbumsArtistsModel, Entity as AlbumsArtistsEntity},
+        albums_tracks::{self, ActiveModel as AlbumsTracksModel, Entity as AlbumsTracksEntity},
+        artists::{self, ActiveModel as ArtistsModel, Entity as ArtistEntity},
+        artists_tracks::{self, ActiveModel as ArtistsTracksModel, Entity as ArtistsTracksEntity},
+        scrobbles::ActiveModel as ScrobblesModel,
+        tags::{self, ActiveModel as TagsModel, Entity as TagEntity},
+        tags_tracks::{self, ActiveModel as TagsTracksModel, Entity as TagsTracksEntity},
+        tracks::{self, ActiveModel as TracksModel, Entity as TrackEntity},
+    },
+    domain::models::Tag,
 };
 
 #[derive(Clone)]
@@ -44,7 +51,7 @@ impl Repository {
 }
 
 #[async_trait::async_trait]
-impl domain::repository::Repository for Repository {
+impl domain::db::Repository for Repository {
     async fn insert_track(&self, track: Track) -> Result<()> {
         let new_track = TracksModel {
             id: ActiveValue::Set(track.id),
@@ -53,13 +60,21 @@ impl domain::repository::Repository for Repository {
             isrc: ActiveValue::Set(track.isrc),
         };
 
-        new_track.insert(&self.conn).await.map_err(to_db_error)?;
+        TrackEntity::insert(new_track.clone())
+            .on_conflict(
+                OnConflict::column(tracks::Column::Id)
+                    .do_nothing()
+                    .to_owned(),
+            )
+            .exec(&self.conn)
+            .await
+            .map_err(to_db_error)?;
 
         Ok(())
     }
 
     async fn get_track_by_id(&self, id: String) -> Result<Option<Track>> {
-        match TrackSchema::find_by_id(id).one(&self.conn).await? {
+        match TrackEntity::find_by_id(id).one(&self.conn).await? {
             Some(track) => Ok(Some(Track {
                 title: track.title,
                 id: track.id,
@@ -77,13 +92,21 @@ impl domain::repository::Repository for Repository {
             cover: ActiveValue::Set(album.cover),
         };
 
-        new_album.insert(&self.conn).await.map_err(to_db_error)?;
+        AlbumEntity::insert(new_album.clone())
+            .on_conflict(
+                OnConflict::column(albums::Column::Id)
+                    .do_nothing()
+                    .to_owned(),
+            )
+            .exec(&self.conn)
+            .await
+            .map_err(to_db_error)?;
 
         Ok(())
     }
 
     async fn get_album_by_id(&self, id: String) -> Result<Option<Album>> {
-        match AlbumSchema::find_by_id(id).one(&self.conn).await? {
+        match AlbumEntity::find_by_id(id).one(&self.conn).await? {
             Some(album) => Ok(Some(Album {
                 title: album.title,
                 id: album.id,
@@ -99,16 +122,44 @@ impl domain::repository::Repository for Repository {
             name: ActiveValue::Set(artist.name),
         };
 
-        new_artist.insert(&self.conn).await.map_err(to_db_error)?;
+        ArtistEntity::insert(new_artist.clone())
+            .on_conflict(
+                OnConflict::column(artists::Column::Id)
+                    .do_nothing()
+                    .to_owned(),
+            )
+            .exec(&self.conn)
+            .await
+            .map_err(to_db_error)?;
         Ok(())
     }
 
     async fn get_artist_by_id(&self, id: String) -> Result<Option<Artist>> {
-        match ArtistSchema::find_by_id(id).one(&self.conn).await? {
+        match ArtistEntity::find_by_id(id).one(&self.conn).await? {
             Some(artist) => Ok(Some(Artist {
                 name: artist.name,
                 id: artist.id,
             })),
+            None => Ok(None),
+        }
+    }
+
+    async fn insert_tag(&self, tag: Tag) -> Result<()> {
+        let new_tag = TagsModel {
+            id: ActiveValue::Set(tag.id),
+        };
+
+        TagEntity::insert(new_tag.clone())
+            .on_conflict(OnConflict::column(tags::Column::Id).do_nothing().to_owned())
+            .exec(&self.conn)
+            .await
+            .map_err(to_db_error)?;
+        Ok(())
+    }
+
+    async fn get_tag_by_id(&self, id: String) -> Result<Option<Tag>> {
+        match TagEntity::find_by_id(id).one(&self.conn).await? {
+            Some(tag) => Ok(Some(Tag { id: tag.id })),
             None => Ok(None),
         }
     }
@@ -139,6 +190,27 @@ async fn insert_entity_links(conn: &DatabaseConnection, track_info: TrackInfo) -
     let track: Track = track_info.clone().into();
     let artists = track_info.clone().artists;
     let album = track_info.clone().album;
+    let tags = track_info.clone().tags;
+
+    for tag in tags.iter() {
+        let tags_tracks = TagsTracksModel {
+            tag_id: ActiveValue::Set(tag.id.clone()),
+            track_id: ActiveValue::Set(track.id.clone()),
+        };
+
+        TagsTracksEntity::insert(tags_tracks.clone())
+            .on_conflict(
+                OnConflict::columns(vec![
+                    tags_tracks::Column::TagId,
+                    tags_tracks::Column::TrackId,
+                ])
+                .do_nothing()
+                .to_owned(),
+            )
+            .exec(conn)
+            .await
+            .map_err(to_db_error)?;
+    }
 
     for artist in artists.iter() {
         let artists_tracks = ArtistsTracksModel {
@@ -146,14 +218,36 @@ async fn insert_entity_links(conn: &DatabaseConnection, track_info: TrackInfo) -
             track_id: ActiveValue::Set(track.id.clone()),
         };
 
-        let _ = artists_tracks.insert(conn).await.map_err(to_db_error);
+        ArtistsTracksEntity::insert(artists_tracks.clone())
+            .on_conflict(
+                OnConflict::columns(vec![
+                    artists_tracks::Column::ArtistId,
+                    artists_tracks::Column::TrackId,
+                ])
+                .do_nothing()
+                .to_owned(),
+            )
+            .exec(conn)
+            .await
+            .map_err(to_db_error)?;
 
         let albums_artists = AlbumsArtistsModel {
             album_id: ActiveValue::Set(album.id.clone()),
             artist_id: ActiveValue::Set(artist.id.clone()),
         };
 
-        let _ = albums_artists.insert(conn).await.map_err(to_db_error);
+        AlbumsArtistsEntity::insert(albums_artists.clone())
+            .on_conflict(
+                OnConflict::columns(vec![
+                    albums_artists::Column::ArtistId,
+                    albums_artists::Column::AlbumId,
+                ])
+                .do_nothing()
+                .to_owned(),
+            )
+            .exec(conn)
+            .await
+            .map_err(to_db_error)?;
     }
 
     let albums_tracks = AlbumsTracksModel {
@@ -161,7 +255,18 @@ async fn insert_entity_links(conn: &DatabaseConnection, track_info: TrackInfo) -
         track_id: ActiveValue::Set(track.id),
     };
 
-    let _ = albums_tracks.insert(conn).await.map_err(to_db_error);
+    AlbumsTracksEntity::insert(albums_tracks.clone())
+        .on_conflict(
+            OnConflict::columns(vec![
+                albums_tracks::Column::TrackId,
+                albums_tracks::Column::AlbumId,
+            ])
+            .do_nothing()
+            .to_owned(),
+        )
+        .exec(conn)
+        .await
+        .map_err(to_db_error)?;
 
     Ok(())
 }

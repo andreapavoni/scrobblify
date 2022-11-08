@@ -45,6 +45,11 @@ sea-orm-migration = { version = "^0.9.0", features = [
   "runtime-tokio-native-tls",
   "sqlx-sqlite",
 ] }
+sea-query = { version = "0.27", features = [
+  "thread-safe",
+  "backend-sqlite",
+  "with-chrono",
+] }
 # Errors
 thiserror = "1.0"
 # Results

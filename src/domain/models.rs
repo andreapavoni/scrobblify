@@ -64,7 +64,7 @@ pub struct TrackInfo {
     pub cover: String,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Tag {
     pub id: String,
 }

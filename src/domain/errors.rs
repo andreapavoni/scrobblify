@@ -6,7 +6,7 @@
 // }
 
 #[derive(thiserror::Error, Debug)]
-#[error("Something went wrong.")]
+#[error("database error")]
 pub struct DatabaseError {
     #[from]
     source: anyhow::Error,
@@ -16,24 +16,14 @@ pub struct DatabaseError {
 
 #[derive(thiserror::Error, Debug)]
 pub enum SpotifyError {
-    #[error("Failed to initialize auth")]
+    #[error("failed to initialize auth")]
     Auth(#[from] rspotify::ClientError),
-    #[error("Failed to process auth callback")]
+    #[error("failed to process auth callback")]
     Callback, // (#[from] PasswordError),
-    #[error("Failed to get auth token")]
+    #[error("failed to get auth token")]
     GetToken,
-    #[error("Failed to refresh auth token")]
+    #[error("failed to refresh auth token")]
     RefreshToken, //(#[from] DatabaseError),
-    #[error("Failed to parse track response")]
+    #[error("failed to parse track response")]
     TrackResponse,
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum LastfmError {
-    #[error("Error from API")]
-    Api,
-    #[error("Failed to fetch track tags")]
-    TrackTagsResponse(#[from] reqwest_middleware::Error),
-    #[error("Failed to parse track tags json response")]
-    TrackTagsJsonParse(String),
 }

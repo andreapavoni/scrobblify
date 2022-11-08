@@ -5,7 +5,8 @@ use graphul::{
     Context, Graphul, IntoResponse,
 };
 
-use crate::core::spotify::SpotifyClient;
+use crate::bridge::spotify::SpotifyClient;
+use crate::domain::bridge::spotify::SpotifyApi;
 
 #[derive(Template)]
 #[template(path = "authorize.html")]

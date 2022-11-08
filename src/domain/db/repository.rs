@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use super::models::{Album, Artist, Track, TrackInfo};
+use crate::domain::models::{Album, Artist, Tag, Track, TrackInfo};
 
 #[async_trait::async_trait]
 pub trait Repository: Send + Sync {
@@ -24,6 +24,10 @@ pub trait Repository: Send + Sync {
     // TODO: async fn list_artists(&self, Option<PaginationOptions or ListQueryOptions>) -> Vec<Artist>;
     // TODO: async fn get_artist_info_by_id(&self, id: String) -> Result<Option<ArtistInfo>>;
     // TODO: async fn list_artists_infos(&self, Option<PaginationOptions or ListQueryOptions>) -> Vec<ArtistInfo>;
+
+    // Tags
+    async fn insert_tag(&self, tag: Tag) -> Result<()>;
+    async fn get_tag_by_id(&self, id: String) -> Result<Option<Tag>>;
 
     // Scrobbles
     async fn insert_scrobble(&self, track_info: TrackInfo) -> Result<()>;

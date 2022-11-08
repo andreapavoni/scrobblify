@@ -1,3 +1,4 @@
+pub mod bridge;
 pub mod core;
 pub mod db;
 pub mod domain;

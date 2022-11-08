@@ -3,13 +3,8 @@ use sea_orm_migration::prelude::*;
 use super::m20221022_000001_create_tracks_table::Tracks;
 use super::m20221101_000001_create_tags_table::Tags;
 
+#[derive(DeriveMigrationName)]
 pub struct Migration;
-
-impl MigrationName for Migration {
-    fn name(&self) -> &str {
-        "m_20221101_000002_create_tags_tracks_table"
-    }
-}
 
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {

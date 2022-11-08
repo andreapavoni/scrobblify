@@ -2,13 +2,8 @@ use sea_orm_migration::prelude::*;
 
 use super::m20221022_000001_create_tracks_table::Tracks;
 
+#[derive(DeriveMigrationName)]
 pub struct Migration;
-
-impl MigrationName for Migration {
-    fn name(&self) -> &str {
-        "m_20221022_000002_create_scrobbles_table"
-    }
-}
 
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {

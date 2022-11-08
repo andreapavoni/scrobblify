@@ -1,44 +1,39 @@
 use anyhow::Result;
 use chrono::Utc;
 use rspotify::{
-    model::{AdditionalType, TimeLimits},
+    model::{AdditionalType, ArtistId, TimeLimits},
     prelude::*,
     scopes, AuthCodeSpotify, Config, Credentials, OAuth, Token,
 };
 use std::{env, fs, path::PathBuf};
 
-use crate::domain::models::{CurrentPlayingTrack, HistoryPlayedTrack};
+use crate::domain::{
+    bridge::spotify::SpotifyApi,
+    models::{CurrentPlayingTrack, HistoryPlayedTrack, Tag},
+};
 
 #[derive(Clone, Debug)]
-pub struct SpotifyClientConfig {
+struct SpotifyClientConfig {
     client_id: String,
     client_secret: String,
     auth_callback_uri: String,
 }
 
 impl SpotifyClientConfig {
-    pub fn new(client_id: String, client_secret: String, auth_callback_uri: String) -> Self {
-        Self {
-            client_id,
-            client_secret,
-            auth_callback_uri,
-        }
-    }
-
     pub fn new_from_env() -> Self {
         let client_id = match env::var_os("SCROBBLIFY_SPOTIFY_CLIENT_ID") {
             Some(v) => v.into_string().unwrap(),
-            None => panic!("$SCROBBLIFY_SPOTIFY_CLIENT_ID is not set"),
+            None => panic!("SCROBBLIFY_SPOTIFY_CLIENT_ID is not set"),
         };
 
         let client_secret = match env::var_os("SCROBBLIFY_SPOTIFY_CLIENT_SECRET") {
             Some(v) => v.into_string().unwrap(),
-            None => panic!("$SCROBBLIFY_SPOTIFY_CLIENT_SECRET is not set"),
+            None => panic!("SCROBBLIFY_SPOTIFY_CLIENT_SECRET is not set"),
         };
 
         let auth_callback_uri = match env::var_os("SCROBBLIFY_SPOTIFY_AUTH_CALLBACK_URI") {
             Some(v) => v.into_string().unwrap(),
-            None => panic!("$SCROBBLIFY_SPOTIFY_AUTH_CALLBACK_URI is not set"),
+            None => panic!("SCROBBLIFY_SPOTIFY_AUTH_CALLBACK_URI is not set"),
         };
 
         Self {
@@ -58,7 +53,7 @@ impl SpotifyClient {
         Self::new(client_config).await
     }
 
-    pub async fn new(client_config: SpotifyClientConfig) -> Result<SpotifyClient> {
+    async fn new(client_config: SpotifyClientConfig) -> Result<SpotifyClient> {
         let creds = Credentials::new(
             client_config.client_id.as_str(),
             client_config.client_secret.as_str(),
@@ -91,37 +86,40 @@ impl SpotifyClient {
         }
     }
 
-    pub fn has_auth(&self) -> bool {
-        get_cache_path().exists()
-    }
-
     async fn with_token(&self) -> Result<Self> {
         let token = load_token_from_cache()?;
         *self.0.token.lock().await.unwrap() = Some(token.clone());
 
         Ok(self.clone())
     }
+}
 
+#[async_trait::async_trait]
+impl SpotifyApi for SpotifyClient {
     // Auth
-    pub async fn get_auth_url(&self) -> Result<String> {
+    fn has_auth(&self) -> bool {
+        get_cache_path().exists()
+    }
+
+    async fn get_auth_url(&self) -> Result<String> {
         let auth_url = self.0.get_authorize_url(true)?;
         Ok(auth_url)
     }
 
-    pub async fn get_auth_token(&mut self, code: &str) -> Result<()> {
+    async fn get_auth_token(&mut self, code: &str) -> Result<()> {
         self.0.request_token(code).await?;
         Ok(())
     }
 
     // API
-    pub async fn get_currently_playing(&self) -> Result<CurrentPlayingTrack> {
+    async fn get_currently_playing(&self) -> Result<CurrentPlayingTrack> {
         self.0
             .current_playing(None, Some(&[AdditionalType::Track]))
             .await?
             .try_into()
     }
 
-    pub async fn get_recently_played(&self) -> Result<Vec<HistoryPlayedTrack>> {
+    async fn get_recently_played(&self) -> Result<Vec<HistoryPlayedTrack>> {
         let time_limit = TimeLimits::Before(Utc::now());
 
         let items = self
@@ -131,6 +129,22 @@ impl SpotifyClient {
             .items;
 
         Ok(items.into_iter().map(|ph| ph.try_into().unwrap()).collect())
+    }
+
+    async fn get_tags(&self, artist_id: &str) -> Result<Vec<Tag>> {
+        let uri = format!("spotify:artist:{}", artist_id);
+        let artist = self
+            .0
+            .artist(&ArtistId::from_uri(uri.as_str()).unwrap())
+            .await?;
+
+        let tags = artist
+            .genres
+            .into_iter()
+            .map(|genre| Tag { id: genre })
+            .collect();
+
+        Ok(tags)
     }
 }
 

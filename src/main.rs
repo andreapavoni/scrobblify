@@ -1,13 +1,19 @@
 use anyhow::Result;
 use std::{env, sync::Arc};
-use tokio::sync::Mutex;
+use tokio::{
+    sync::Mutex,
+    time::{sleep, Duration},
+};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use scrobblify::{
-    core::{spotify::SpotifyClient, start_scrobbling, App},
+    bridge::spotify::SpotifyClient,
+    core::{auto_scrobble, App},
     db::repository::Repository,
     web::http::new_app,
 };
+
+const SPOTIFY_POLLING_SECS: u64 = 60;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -29,7 +35,15 @@ async fn main() -> Result<()> {
     let core = Arc::new(Mutex::new(App::new(Box::new(db), spotify)));
 
     tokio::spawn(async move {
-        let _ = start_scrobbling(core.clone()).await;
+        loop {
+            if let Err(err) = auto_scrobble(core.clone()).await {
+                tracing::error!("error while scrobbling: `{:?}`", err)
+            }
+
+            println!("======= sleep ========");
+            let duration = Duration::new(SPOTIFY_POLLING_SECS, 0);
+            sleep(duration).await;
+        }
     });
 
     let app = new_app().await;

@@ -1,8 +1,7 @@
-use std::time::Duration;
-
 use anyhow::Result;
 use rspotify::model::{CurrentlyPlayingContext, PlayableItem, SimplifiedAlbum, SimplifiedArtist};
 use rspotify::model::{FullTrack, PlayHistory};
+use std::time::Duration;
 
 use crate::domain::models::Track;
 use crate::domain::{
