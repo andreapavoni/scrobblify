@@ -40,10 +40,10 @@ impl domain::app::App for App {
 
             // fetching genres from the artist profile, it's the most reliable way to get some tags
             let tags = self.spotify.get_tags(&artist.id).await?;
-            println!(
-                "TAGS for ARTIST `{}`: `{:?}`",
+            tracing::debug!(
+                "tags for artist {}: `{:?}`",
                 artist.clone().name,
-                tags.clone()
+                tags.clone(),
             );
             for tag in tags.iter() {
                 self.db.insert_tag(tag.clone()).await?;

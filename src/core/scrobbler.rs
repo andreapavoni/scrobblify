@@ -32,8 +32,6 @@ impl Scrobbler {
                 if let Err(err) = Self::auto_scrobble(app.clone()).await {
                     tracing::error!("error while scrobbling: `{:?}`", err)
                 }
-
-                println!("======= sleep ========");
                 let duration = Duration::new(SPOTIFY_POLLING_SECS, 0);
                 sleep(duration).await;
             }
@@ -47,7 +45,7 @@ impl Scrobbler {
 
         match calculate_scrobble(&current, &cache) {
             ScrobblerResult::Ok(scrobble) => {
-                println!("======= new scrobble: `{:#?}` ========", scrobble.clone());
+                tracing::info!("new scrobble: `{:#?}`", scrobble.clone().track.title);
 
                 app.current_track = current.clone();
                 app.scrobble(scrobble).await?;
@@ -55,14 +53,17 @@ impl Scrobbler {
             }
             ScrobblerResult::Cache => {
                 app.current_track = current.clone();
-                println!("======= cache track: `{:#?}` ========", current.clone());
+                tracing::debug!(
+                    "scrobbling: cache track: `{:?}`",
+                    current.clone().track.unwrap().title
+                );
             }
             ScrobblerResult::Ignore => {
                 app.current_track = Default::default();
-                println!("======= ignore ========");
+                tracing::debug!("ignore");
             }
             ScrobblerResult::AlreadyScrobbled => {
-                println!("======= already scrobbled ========");
+                tracing::debug!("scrobbling: skip already scrobbled");
             }
         };
 
