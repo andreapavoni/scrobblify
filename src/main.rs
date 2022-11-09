@@ -5,7 +5,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use scrobblify::{
     bridge::spotify::SpotifyClient,
-    core::{start_auto_scrobbling, App},
+    core::{App, Scrobbler},
     db::repository::Repository,
     web::HttpUi,
 };
@@ -30,8 +30,7 @@ async fn main() -> Result<()> {
     let app = Arc::new(Mutex::new(App::new(Box::new(db), spotify)));
     let http_ui = HttpUi::new(app.clone());
 
-    start_auto_scrobbling(app.clone()).await;
-
+    Scrobbler::start_auto_scrobbling(app.clone()).await;
     http_ui.serve_from_env().await;
 
     Ok(())

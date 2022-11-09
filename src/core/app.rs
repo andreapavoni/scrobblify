@@ -1,26 +1,17 @@
 use anyhow::Result;
-use std::sync::Arc;
-use tokio::{
-    sync::Mutex,
-    time::{sleep, Duration},
-};
 
-use super::scrobbler::{Scrobbler, ScrobblerResult};
 use crate::bridge::spotify::SpotifyClient;
 use crate::domain::{
     self,
-    app::App as DomainApp,
     bridge::spotify::SpotifyApi,
     db::Repository,
     models::{CurrentPlayingTrack, Scrobble, Tag},
 };
 
-const SPOTIFY_POLLING_SECS: u64 = 60;
-
 pub struct App {
-    current_track: CurrentPlayingTrack,
+    pub current_track: CurrentPlayingTrack,
     db: Box<dyn Repository>,
-    spotify: SpotifyClient,
+    pub spotify: SpotifyClient,
 }
 
 impl App {
@@ -99,46 +90,4 @@ impl domain::app::App for App {
     async fn store_spotify_auth_token(&self, code: &str) -> Result<()> {
         self.spotify.clone().get_auth_token(code).await
     }
-}
-
-pub async fn start_auto_scrobbling(app: Arc<Mutex<App>>) {
-    tokio::spawn(async move {
-        loop {
-            if let Err(err) = auto_scrobble(app.clone()).await {
-                tracing::error!("error while scrobbling: `{:?}`", err)
-            }
-
-            println!("======= sleep ========");
-            let duration = Duration::new(SPOTIFY_POLLING_SECS, 0);
-            sleep(duration).await;
-        }
-    });
-}
-
-async fn auto_scrobble(app: Arc<Mutex<App>>) -> Result<()> {
-    let mut app = app.lock().await;
-    let current = app.spotify.get_currently_playing().await?;
-    let cache = app.current_track.clone();
-
-    match Scrobbler::calculate_scrobble(&current, &cache) {
-        ScrobblerResult::Ok(scrobble) => {
-            app.current_track = current.clone();
-            println!("======= new scrobble: `{:#?}` ========", scrobble.clone());
-            app.scrobble(scrobble).await?;
-            app.current_track.scrobbled = true;
-        }
-        ScrobblerResult::Cache => {
-            app.current_track = current.clone();
-            println!("======= cache track: `{:#?}` ========", current.clone());
-        }
-        ScrobblerResult::Ignore => {
-            app.current_track = Default::default();
-            println!("======= ignore ========");
-        }
-        ScrobblerResult::AlreadyScrobbled => {
-            println!("======= already scrobbled ========");
-        }
-    };
-
-    Ok(())
 }

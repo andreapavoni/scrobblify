@@ -1,5 +1,5 @@
-pub mod app;
-
+mod app;
 mod scrobbler;
 
-pub use app::*;
+pub use app::App;
+pub use scrobbler::*;
