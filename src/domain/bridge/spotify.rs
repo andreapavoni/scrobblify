@@ -12,5 +12,5 @@ pub trait SpotifyApi {
         &self,
         timestamp: DateTime<Utc>,
     ) -> Result<Vec<HistoryPlayedTrack>>;
-    async fn get_tags(&self, artist_id: &str) -> Result<Vec<Tag>>;
+    async fn get_tags(&self, artists_ids: Vec<&str>) -> Result<Vec<Tag>>;
 }

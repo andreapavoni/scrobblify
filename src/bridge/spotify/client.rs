@@ -134,18 +134,29 @@ impl SpotifyApi for SpotifyClient {
         Ok(items.into_iter().map(|ph| ph.try_into().unwrap()).collect())
     }
 
-    async fn get_tags(&self, artist_id: &str) -> Result<Vec<Tag>> {
-        let uri = format!("spotify:artist:{}", artist_id);
-        let artist = self
-            .0
-            .artist(&ArtistId::from_uri(uri.as_str()).unwrap())
-            .await?;
-
-        let tags = artist
-            .genres
+    async fn get_tags(&self, artists_ids: Vec<&str>) -> Result<Vec<Tag>> {
+        let artists_ids: Vec<ArtistId> = artists_ids
             .into_iter()
-            .map(|genre| Tag { id: genre })
+            .map(|artist_id| {
+                let uri = format!("spotify:artist:{}", artist_id);
+                ArtistId::from_uri(uri.as_str()).unwrap()
+            })
             .collect();
+
+        let artists = self.0.artists(&artists_ids).await?;
+
+        let mut tags: Vec<Tag> = artists
+            .into_iter()
+            .flat_map(|fa| {
+                fa.genres
+                    .into_iter()
+                    .map(|id| Tag { id })
+                    .collect::<Vec<Tag>>()
+            })
+            .collect();
+
+        tags.sort();
+        tags.dedup();
 
         Ok(tags)
     }

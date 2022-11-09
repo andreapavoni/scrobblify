@@ -1,7 +1,7 @@
 use askama::Template;
 use axum::{
     extract::{Query, State},
-    http::StatusCode,
+    http::{header, HeaderValue, StatusCode},
     response::{Html, IntoResponse, Redirect, Response},
     routing::get,
     Router,
@@ -9,6 +9,7 @@ use axum::{
 use serde::Deserialize;
 use std::{env, net::SocketAddr, sync::Arc};
 use tokio::sync::Mutex;
+use tower_http::set_header::SetResponseHeaderLayer;
 
 use crate::domain::app::App as DomainApp;
 
@@ -23,7 +24,11 @@ impl HttpUi {
     pub fn new(app: Arc<Mutex<dyn DomainApp>>) -> Self {
         let router = Router::with_state(app.clone())
             .route("/auth/callback", get(auth_callback_handler))
-            .route("/", get(index_handler));
+            .route("/", get(index_handler))
+            .layer(SetResponseHeaderLayer::if_not_present(
+                header::SERVER,
+                HeaderValue::from_static("scrobblify"),
+            ));
 
         HttpUi { router }
     }
@@ -39,6 +44,8 @@ impl HttpUi {
         let addr = format!("{}:{}", host, port)
             .parse::<SocketAddr>()
             .expect(format!("unable to parse socket address with `{}:{}`", host, port).as_str());
+
+        tracing::info!("server started and listening on {}", addr);
 
         axum::Server::bind(&addr)
             .serve(self.router.clone().into_make_service())

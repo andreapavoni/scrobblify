@@ -5,7 +5,7 @@ use crate::domain::{
     self,
     bridge::spotify::SpotifyApi,
     db::Repository,
-    models::{CurrentPlayingTrack, Scrobble, Tag},
+    models::{CurrentPlayingTrack, Scrobble},
 };
 
 pub struct App {
@@ -31,29 +31,20 @@ impl domain::app::App for App {
 
         self.db.insert_track(track_info.clone().into()).await?;
 
-        let mut all_tags: Vec<Tag> = vec![];
-
+        let mut artists_ids: Vec<&str> = vec![];
         for artist in track_info.artists.iter() {
             // TODO: if an artist is already on db, maybe we don't need to fetch tags
             // same for track
             self.db.insert_artist(artist.clone()).await?;
-
-            // fetching genres from the artist profile, it's the most reliable way to get some tags
-            let tags = self.spotify.get_tags(&artist.id).await?;
-            tracing::debug!(
-                "tags for artist {}: `{:?}`",
-                artist.clone().name,
-                tags.clone(),
-            );
-            for tag in tags.iter() {
-                self.db.insert_tag(tag.clone()).await?;
-                all_tags.push(tag.clone());
-            }
+            artists_ids.push(&artist.id);
         }
 
-        track_info.tags = all_tags.clone();
-        track_info.tags.sort();
-        track_info.tags.dedup();
+        // fetching genres from the artist profile, it's the most reliable way to get some tags
+        let tags = self.spotify.get_tags(artists_ids).await?;
+        for tag in tags.iter() {
+            self.db.insert_tag(tag.clone()).await?;
+        }
+        track_info.tags = tags.clone();
 
         self.db.insert_album(track_info.album.clone()).await?;
         self.db.insert_scrobble(track_info.clone()).await?;
