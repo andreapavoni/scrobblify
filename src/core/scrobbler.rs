@@ -45,7 +45,18 @@ impl Scrobbler {
 
         match calculate_scrobble(&current, &cache) {
             ScrobblerResult::Ok(scrobble) => {
-                tracing::info!("new scrobble: `{:#?}`", scrobble.clone().track.title);
+                tracing::info!(
+                    "scrobble: {:#?} by {:?}",
+                    scrobble.clone().track.title,
+                    scrobble
+                        .clone()
+                        .track
+                        .artists
+                        .into_iter()
+                        .map(|a| a.name)
+                        .collect::<Vec<String>>()
+                        .join(", ")
+                );
 
                 app.current_track = current.clone();
                 app.scrobble(scrobble).await?;
