@@ -26,7 +26,9 @@ tokio = { version = "1.0", features = ["full"] }
 futures = "0.3"
 async-trait = "0.1"
 # web framework
-graphul = { version = "0.3" }
+axum = { version = "0.6.0-rc.2", features = ["ws", "headers", "json"] }
+axum-extra = { version = "0.4.0-rc.1", features = ["spa"] }
+tower-http = { version = "0.3.0", features = ["trace", "set-header"] }
 # html templates
 askama = "0.11"
 # spotify API

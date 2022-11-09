@@ -1,9 +1,9 @@
 use anyhow::Result;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, EntityTrait,
 };
-use std::{env, time::Duration};
+use std::{env, str::FromStr, time::Duration};
 
 use crate::domain::{
     self,
@@ -16,7 +16,7 @@ use crate::{
         albums_tracks::{self, ActiveModel as AlbumsTracksModel, Entity as AlbumsTracksEntity},
         artists::{self, ActiveModel as ArtistsModel, Entity as ArtistEntity},
         artists_tracks::{self, ActiveModel as ArtistsTracksModel, Entity as ArtistsTracksEntity},
-        scrobbles::ActiveModel as ScrobblesModel,
+        scrobbles::{ActiveModel as ScrobblesModel, Entity as ScrobbleEntity},
         tags::{self, ActiveModel as TagsModel, Entity as TagEntity},
         tags_tracks::{self, ActiveModel as TagsTracksModel, Entity as TagsTracksEntity},
         tracks::{self, ActiveModel as TracksModel, Entity as TrackEntity},
@@ -177,6 +177,13 @@ impl domain::db::Repository for Repository {
         insert_entity_links(&self.conn, track_info.clone()).await?;
 
         Ok(())
+    }
+
+    async fn get_last_scrobble_timestamp(&self) -> Result<Option<DateTime<Utc>>> {
+        match ScrobbleEntity::find().one(&self.conn).await? {
+            Some(scrobble) => Ok(Some(DateTime::from_str(scrobble.timestamp.as_str())?)),
+            None => Ok(None),
+        }
     }
 }
 

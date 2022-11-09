@@ -1,4 +1,5 @@
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 
 use crate::domain::models::{Album, Artist, Tag, Track, TrackInfo};
 
@@ -31,5 +32,6 @@ pub trait Repository: Send + Sync {
 
     // Scrobbles
     async fn insert_scrobble(&self, track_info: TrackInfo) -> Result<()>;
+    async fn get_last_scrobble_timestamp(&self) -> Result<Option<DateTime<Utc>>>;
     // TODO: async fn list_scrobbles(&self, Option<PaginationOptions or ListQueryOptions>) -> Vec<Scrobble>;
 }

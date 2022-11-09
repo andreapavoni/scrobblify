@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use rspotify::{
     model::{AdditionalType, ArtistId, TimeLimits},
     prelude::*,
@@ -119,8 +119,11 @@ impl SpotifyApi for SpotifyClient {
             .try_into()
     }
 
-    async fn get_recently_played(&self) -> Result<Vec<HistoryPlayedTrack>> {
-        let time_limit = TimeLimits::Before(Utc::now());
+    async fn get_recently_played(
+        &self,
+        timestamp: DateTime<Utc>,
+    ) -> Result<Vec<HistoryPlayedTrack>> {
+        let time_limit = TimeLimits::After(timestamp);
 
         let items = self
             .0

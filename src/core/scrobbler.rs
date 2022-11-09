@@ -2,19 +2,6 @@ use chrono::{DateTime, Utc};
 
 use crate::domain::models::{CurrentPlayingTrack, Scrobble};
 
-// # Spec
-// - [ ] As soon as a track has been played for 50% of its length or 4 minutes, it should be counted as a scrobble
-// - [ ] That scrobble should be submitted when the play has ended in order to know its duration
-// - [ ] If the total play duration is enough to count as a scrobble, but not longer than the total track length + enough for a second scrobble, it should be submitted as a scrobble with the according duration
-// - [ ] If the duration exceeds this value, the first scrobble should be submitted as a scrobble with the duration of the full track length, while the second scrobble is queued up following the above suggestions in regards to remaining time
-//
-// ## Example
-// The user starts playing '(Fine Layers of) Slaysenflite', which is exactly 3:00 minutes long.
-// - If the user ends the play after 1:22, no scrobble is submitted
-// - If the user ends the play after 2:06, a scrobble with `"duration":126` is submitted
-// - If the user jumps back several times and ends the play after 3:57, a scrobble with `"duration":237` is submitted
-// - If the user jumps back several times and ends the play after 4:49, two scrobbles with `"duration":180` and `"duration":109` are submitted
-
 const SCROBBLE_LISTENING_MIN_SECS: u64 = 180;
 
 pub enum ScrobblerResult {
