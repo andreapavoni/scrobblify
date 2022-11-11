@@ -77,3 +77,25 @@ pub struct Artist {
     pub id: String,
     pub name: String,
 }
+
+#[derive(Clone, Debug)]
+pub struct StatsTag {
+    pub name: String,
+    pub score: u32,
+    pub listened_secs: f64,
+}
+
+#[derive(Clone, Debug)]
+pub struct StatsTrack {
+    pub id: String,
+    pub title: String,
+    pub score: u32,
+    pub listened_secs: f64,
+}
+#[derive(Clone, Debug)]
+pub struct StatsArtist {
+    pub id: String,
+    pub name: String,
+    pub score: u32,
+    pub listened_secs: f64,
+}

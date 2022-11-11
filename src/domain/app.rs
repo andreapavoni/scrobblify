@@ -1,4 +1,5 @@
 use anyhow::Result;
+use chrono::NaiveDate;
 
 use super::models::*;
 
@@ -10,4 +11,9 @@ pub trait App: Send + Sync {
     fn is_spotify_authenticated(&self) -> bool;
     async fn get_spotify_auth_url(&self) -> Result<String>;
     async fn store_spotify_auth_token(&self, code: &str) -> Result<()>;
+
+    async fn stats_for_popular_tracks(&self, start: NaiveDate, end: NaiveDate) -> Vec<StatsTrack>;
+    async fn stats_for_popular_tags(&self, start: NaiveDate, end: NaiveDate) -> Vec<StatsTag>;
+    async fn stats_for_popular_artists(&self, start: NaiveDate, end: NaiveDate)
+        -> Vec<StatsArtist>;
 }

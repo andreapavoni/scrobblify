@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{NaiveDate, Utc};
+use chrono::{NaiveDate, NaiveDateTime, Utc};
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, DbBackend,
     EntityTrait, FromQueryResult, Statement,
@@ -20,7 +20,9 @@ use crate::{
     },
     domain::{
         self,
-        models::{Album, Artist, Scrobble, Tag, Track, TrackInfo},
+        models::{
+            Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo,
+        },
     },
 };
 
@@ -59,6 +61,29 @@ pub struct ScrobbleQueryResult {
     pub album: String,
     pub tags: String,
     pub timestamp: String,
+}
+
+#[derive(Debug, FromQueryResult)]
+pub struct PopularTagQueryResult {
+    pub tag: String,
+    pub score: u32,
+    pub listened_secs: f64,
+}
+
+#[derive(Debug, FromQueryResult)]
+pub struct PopularTrackQueryResult {
+    pub id: String,
+    pub title: String,
+    pub score: u32,
+    pub listened_secs: f64,
+}
+
+#[derive(Debug, FromQueryResult)]
+pub struct PopularArtistQueryResult {
+    pub id: String,
+    pub name: String,
+    pub score: u32,
+    pub listened_secs: f64,
 }
 
 #[async_trait::async_trait]
@@ -185,10 +210,7 @@ impl domain::db::Repository for Repository {
         date_start: NaiveDate,
         date_end: NaiveDate,
     ) -> Vec<Scrobble> {
-        let time_start = chrono::NaiveTime::from_hms(0, 0, 0);
-        let start = chrono::NaiveDateTime::new(date_start, time_start);
-        let time_end = chrono::NaiveTime::from_hms(23, 59, 59);
-        let end = chrono::NaiveDateTime::new(date_end, time_end);
+        let (start, end) = build_dates_range(date_start, date_end);
 
         match ScrobbleQueryResult::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
@@ -236,12 +258,99 @@ impl domain::db::Repository for Repository {
             }
         }
     }
+
+    async fn stats_for_popular_tags(
+        &self,
+        date_start: NaiveDate,
+        date_end: NaiveDate,
+    ) -> Vec<StatsTag> {
+        let (start, end) = build_dates_range(date_start, date_end);
+
+        match PopularTagQueryResult::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::Sqlite,
+            include_str!("queries/stats_for_popular_tags.sql"),
+            vec![
+                sea_orm::Value::from(start.to_string()),
+                sea_orm::Value::from(end.to_string()),
+            ],
+        ))
+        .all(&self.conn)
+        .await
+        {
+            Ok(tags) => tags.into_iter().map(|t| t.into()).collect(),
+            Err(err) => {
+                tracing::error!(msg = "query error", error = format!("{:?}", err));
+                vec![]
+            }
+        }
+    }
+
+    async fn stats_for_popular_tracks(
+        &self,
+        date_start: NaiveDate,
+        date_end: NaiveDate,
+    ) -> Vec<StatsTrack> {
+        let (start, end) = build_dates_range(date_start, date_end);
+
+        match PopularTrackQueryResult::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::Sqlite,
+            include_str!("queries/stats_for_popular_tracks.sql"),
+            vec![
+                sea_orm::Value::from(start.to_string()),
+                sea_orm::Value::from(end.to_string()),
+            ],
+        ))
+        .all(&self.conn)
+        .await
+        {
+            Ok(tracks) => tracks.into_iter().map(|t| t.into()).collect(),
+            Err(err) => {
+                tracing::error!(msg = "query error", error = format!("{:?}", err));
+                vec![]
+            }
+        }
+    }
+
+    async fn stats_for_popular_artists(
+        &self,
+        date_start: NaiveDate,
+        date_end: NaiveDate,
+    ) -> Vec<StatsArtist> {
+        let (start, end) = build_dates_range(date_start, date_end);
+
+        match PopularArtistQueryResult::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::Sqlite,
+            include_str!("queries/stats_for_popular_artists.sql"),
+            vec![
+                sea_orm::Value::from(start.to_string()),
+                sea_orm::Value::from(end.to_string()),
+            ],
+        ))
+        .all(&self.conn)
+        .await
+        {
+            Ok(artists) => artists.into_iter().map(|t| t.into()).collect(),
+            Err(err) => {
+                tracing::error!(msg = "query error", error = format!("{:?}", err));
+                vec![]
+            }
+        }
+    }
 }
 
 /// Helper function to cast a sea_orm::DbErr into a domain Database Error.
 /// This requires casting the sea_orm::DbErr into anyhow::Error first.
 fn to_db_error(e: sea_orm::DbErr) -> domain::errors::DatabaseError {
     domain::errors::DatabaseError::from(anyhow::Error::from(e))
+}
+
+fn build_dates_range(date_start: NaiveDate, date_end: NaiveDate) -> (NaiveDateTime, NaiveDateTime) {
+    let time_start = chrono::NaiveTime::from_hms(0, 0, 0);
+    let start = chrono::NaiveDateTime::new(date_start, time_start);
+    let time_end = chrono::NaiveTime::from_hms(23, 59, 59);
+    let end = chrono::NaiveDateTime::new(date_end, time_end);
+
+    (start, end)
 }
 
 async fn insert_entity_links(conn: &DatabaseConnection, track_info: TrackInfo) -> Result<()> {

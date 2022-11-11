@@ -1,7 +1,8 @@
 use anyhow::Result;
+use chrono::NaiveDate;
 
 use crate::bridge::spotify::SpotifyClient;
-use crate::domain::models::HistoryPlayedTrack;
+use crate::domain::models::{HistoryPlayedTrack, StatsArtist, StatsTag, StatsTrack};
 use crate::domain::{
     self,
     bridge::spotify::SpotifyApi,
@@ -35,6 +36,7 @@ impl App {
 
 #[async_trait::async_trait]
 impl domain::app::App for App {
+    // Spotify API
     async fn get_recently_played(&self) -> Result<Vec<HistoryPlayedTrack>> {
         if let Some(scrobble) = self.db.get_last_scrobble().await? {
             let recently_played = self.spotify.get_recently_played(scrobble.timestamp).await?;
@@ -48,6 +50,7 @@ impl domain::app::App for App {
         self.spotify.get_currently_playing().await
     }
 
+    // Scrobbling
     async fn scrobble(&self, scrobble: ScrobbleInfo) -> Result<()> {
         let mut track_info = scrobble.track;
 
@@ -74,6 +77,7 @@ impl domain::app::App for App {
         Ok(())
     }
 
+    // Spotify Auth
     fn is_spotify_authenticated(&self) -> bool {
         self.spotify.has_auth()
     }
@@ -84,5 +88,22 @@ impl domain::app::App for App {
 
     async fn store_spotify_auth_token(&self, code: &str) -> Result<()> {
         self.spotify.clone().get_auth_token(code).await
+    }
+
+    // Stats
+    async fn stats_for_popular_tracks(&self, start: NaiveDate, end: NaiveDate) -> Vec<StatsTrack> {
+        self.db.stats_for_popular_tracks(start, end).await
+    }
+
+    async fn stats_for_popular_tags(&self, start: NaiveDate, end: NaiveDate) -> Vec<StatsTag> {
+        self.db.stats_for_popular_tags(start, end).await
+    }
+
+    async fn stats_for_popular_artists(
+        &self,
+        start: NaiveDate,
+        end: NaiveDate,
+    ) -> Vec<StatsArtist> {
+        self.db.stats_for_popular_artists(start, end).await
     }
 }

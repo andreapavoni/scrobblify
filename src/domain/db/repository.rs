@@ -1,7 +1,9 @@
 use anyhow::Result;
 use chrono::NaiveDate;
 
-use crate::domain::models::{Album, Artist, Scrobble, Tag, Track, TrackInfo};
+use crate::domain::models::{
+    Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo,
+};
 
 #[async_trait::async_trait]
 pub trait Repository: Send + Sync {
@@ -25,4 +27,10 @@ pub trait Repository: Send + Sync {
         -> Vec<Scrobble>;
     async fn list_scrobbles_by_tag(&self, tag: &str) -> Vec<Scrobble>;
     async fn list_scrobbles_by_artist(&self, artist_id: &str) -> Vec<Scrobble>;
+
+    // Stats
+    async fn stats_for_popular_tags(&self, start: NaiveDate, end: NaiveDate) -> Vec<StatsTag>;
+    async fn stats_for_popular_tracks(&self, start: NaiveDate, end: NaiveDate) -> Vec<StatsTrack>;
+    async fn stats_for_popular_artists(&self, start: NaiveDate, end: NaiveDate)
+        -> Vec<StatsArtist>;
 }
