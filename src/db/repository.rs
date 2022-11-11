@@ -1,14 +1,11 @@
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use chrono::{NaiveDate, Utc};
 use sea_orm::{
-    sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, EntityTrait,
+    sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, DbBackend,
+    EntityTrait, FromQueryResult, Statement,
 };
-use std::{env, str::FromStr, time::Duration};
+use std::env;
 
-use crate::domain::{
-    self,
-    models::{Album, Artist, Track, TrackInfo},
-};
 use crate::{
     db::entities::{
         albums::{self, ActiveModel as AlbumsModel, Entity as AlbumEntity},
@@ -16,12 +13,15 @@ use crate::{
         albums_tracks::{self, ActiveModel as AlbumsTracksModel, Entity as AlbumsTracksEntity},
         artists::{self, ActiveModel as ArtistsModel, Entity as ArtistEntity},
         artists_tracks::{self, ActiveModel as ArtistsTracksModel, Entity as ArtistsTracksEntity},
-        scrobbles::{ActiveModel as ScrobblesModel, Entity as ScrobbleEntity},
+        scrobbles::ActiveModel as ScrobblesModel,
         tags::{self, ActiveModel as TagsModel, Entity as TagEntity},
         tags_tracks::{self, ActiveModel as TagsTracksModel, Entity as TagsTracksEntity},
         tracks::{self, ActiveModel as TracksModel, Entity as TrackEntity},
     },
-    domain::models::Tag,
+    domain::{
+        self,
+        models::{Album, Artist, Scrobble, Tag, Track, TrackInfo},
+    },
 };
 
 #[derive(Clone)]
@@ -50,6 +50,17 @@ impl Repository {
     }
 }
 
+#[derive(Debug, FromQueryResult)]
+pub struct ScrobbleQueryResult {
+    pub track: String,
+    pub duration_secs: f64,
+    pub cover: String,
+    pub artists: String,
+    pub album: String,
+    pub tags: String,
+    pub timestamp: String,
+}
+
 #[async_trait::async_trait]
 impl domain::db::Repository for Repository {
     async fn insert_track(&self, track: Track) -> Result<()> {
@@ -75,12 +86,7 @@ impl domain::db::Repository for Repository {
 
     async fn get_track_by_id(&self, id: String) -> Result<Option<Track>> {
         match TrackEntity::find_by_id(id).one(&self.conn).await? {
-            Some(track) => Ok(Some(Track {
-                title: track.title,
-                id: track.id,
-                duration_secs: Duration::from_secs_f64(track.duration_secs),
-                isrc: track.isrc,
-            })),
+            Some(track) => Ok(Some(track.into())),
             None => Ok(None),
         }
     }
@@ -105,17 +111,6 @@ impl domain::db::Repository for Repository {
         Ok(())
     }
 
-    async fn get_album_by_id(&self, id: String) -> Result<Option<Album>> {
-        match AlbumEntity::find_by_id(id).one(&self.conn).await? {
-            Some(album) => Ok(Some(Album {
-                title: album.title,
-                id: album.id,
-                cover: album.cover,
-            })),
-            None => Ok(None),
-        }
-    }
-
     async fn insert_artist(&self, artist: Artist) -> Result<()> {
         let new_artist = ArtistsModel {
             id: ActiveValue::Set(artist.id),
@@ -134,16 +129,6 @@ impl domain::db::Repository for Repository {
         Ok(())
     }
 
-    async fn get_artist_by_id(&self, id: String) -> Result<Option<Artist>> {
-        match ArtistEntity::find_by_id(id).one(&self.conn).await? {
-            Some(artist) => Ok(Some(Artist {
-                name: artist.name,
-                id: artist.id,
-            })),
-            None => Ok(None),
-        }
-    }
-
     async fn insert_tag(&self, tag: Tag) -> Result<()> {
         let new_tag = TagsModel {
             id: ActiveValue::Set(tag.id),
@@ -155,13 +140,6 @@ impl domain::db::Repository for Repository {
             .await
             .map_err(to_db_error)?;
         Ok(())
-    }
-
-    async fn get_tag_by_id(&self, id: String) -> Result<Option<Tag>> {
-        match TagEntity::find_by_id(id).one(&self.conn).await? {
-            Some(tag) => Ok(Some(Tag { id: tag.id })),
-            None => Ok(None),
-        }
     }
 
     async fn insert_scrobble(&self, track_info: TrackInfo) -> Result<()> {
@@ -179,10 +157,83 @@ impl domain::db::Repository for Repository {
         Ok(())
     }
 
-    async fn get_last_scrobble_timestamp(&self) -> Result<Option<DateTime<Utc>>> {
-        match ScrobbleEntity::find().one(&self.conn).await? {
-            Some(scrobble) => Ok(Some(DateTime::from_str(scrobble.timestamp.as_str())?)),
+    async fn get_last_scrobble(&self) -> Result<Option<Scrobble>> {
+        // match ScrobbleEntity::find()
+        //     .join(JoinType::LeftJoin, scrobbles::Relation::Tracks.def())
+        //     .into_model::<ScrobbleQueryResult>()
+        //     .one(&self.conn)
+        //     .await?
+        // {
+        //     Some(scrobble) => Ok(Some(scrobble.into())),
+        //     None => Ok(None),
+        // }
+        match ScrobbleQueryResult::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::Sqlite,
+            include_str!("queries/get_last_scrobble_query.sql"),
+            vec![1.into()],
+        ))
+        .one(&self.conn)
+        .await?
+        {
+            Some(scrobble) => Ok(Some(scrobble.into())),
             None => Ok(None),
+        }
+    }
+
+    async fn list_scrobbles_by_date_range(
+        &self,
+        date_start: NaiveDate,
+        date_end: NaiveDate,
+    ) -> Vec<Scrobble> {
+        let time_start = chrono::NaiveTime::from_hms(0, 0, 0);
+        let start = chrono::NaiveDateTime::new(date_start, time_start);
+        let time_end = chrono::NaiveTime::from_hms(23, 59, 59);
+        let end = chrono::NaiveDateTime::new(date_end, time_end);
+
+        match ScrobbleQueryResult::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::Sqlite,
+            include_str!("queries/list_scrobbles_by_date_range_query.sql"),
+            vec![
+                sea_orm::Value::from(start.to_string()),
+                sea_orm::Value::from(end.to_string()),
+            ],
+        ))
+        .all(&self.conn)
+        .await
+        {
+            Ok(scrobbles) => scrobbles.into_iter().map(|s| s.into()).collect(),
+            Err(_) => vec![],
+        }
+    }
+
+    async fn list_scrobbles_by_tag(&self, tag: &str) -> Vec<Scrobble> {
+        match ScrobbleQueryResult::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::Sqlite,
+            include_str!("queries/list_scrobbles_by_tag_query.sql"),
+            vec![tag.into()],
+        ))
+        .all(&self.conn)
+        .await
+        {
+            Ok(scrobbles) => scrobbles.into_iter().map(|s| s.into()).collect(),
+            Err(_) => vec![],
+        }
+    }
+
+    async fn list_scrobbles_by_artist(&self, artist_id: &str) -> Vec<Scrobble> {
+        match ScrobbleQueryResult::find_by_statement(Statement::from_sql_and_values(
+            DbBackend::Sqlite,
+            include_str!("queries/list_scrobbles_by_artist_query.sql"),
+            vec![artist_id.into()],
+        ))
+        .all(&self.conn)
+        .await
+        {
+            Ok(scrobbles) => scrobbles.into_iter().map(|s| s.into()).collect(),
+            Err(err) => {
+                tracing::error!(msg = "query error", error = format!("{:?}", err));
+                vec![]
+            }
         }
     }
 }

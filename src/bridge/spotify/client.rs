@@ -112,11 +112,17 @@ impl SpotifyApi for SpotifyClient {
     }
 
     // API
-    async fn get_currently_playing(&self) -> Result<CurrentPlayingTrack> {
-        self.0
+    async fn get_currently_playing(&self) -> Result<Option<CurrentPlayingTrack>> {
+        let cpt: Option<CurrentPlayingTrack> = match self
+            .0
             .current_playing(None, Some(&[AdditionalType::Track]))
             .await?
-            .try_into()
+        {
+            Some(cp) => Some(cp.try_into()?),
+            None => None,
+        };
+
+        Ok(cpt)
     }
 
     async fn get_recently_played(
@@ -127,7 +133,7 @@ impl SpotifyApi for SpotifyClient {
 
         let items = self
             .0
-            .current_user_recently_played(Some(20), Some(time_limit))
+            .current_user_recently_played(Some(100), Some(time_limit))
             .await?
             .items;
 

@@ -7,41 +7,37 @@ pub struct HistoryPlayedTrack {
     pub played_at: DateTime<Utc>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct CurrentPlayingTrack {
-    pub track: Option<TrackInfo>,
-    pub timestamp: Option<DateTime<Utc>>,
-    pub progress_secs: Option<Duration>,
+    pub track: TrackInfo,
+    pub timestamp: DateTime<Utc>,
+    pub progress_secs: Duration,
     pub scrobbled: bool,
 }
 
 impl PartialEq for CurrentPlayingTrack {
     fn eq(&self, other: &Self) -> bool {
-        if self.track.is_none() {
-            return false;
-        }
-
-        if other.track.is_none() {
-            return false;
-        }
-
-        return match (
-            self.timestamp,
-            other.timestamp,
-            self.track.as_ref(),
-            other.track.as_ref(),
-        ) {
-            (Some(a), Some(b), Some(ta), Some(tb)) => return a == b && ta.id == tb.id,
-            _ => false,
-        };
+        return self.timestamp == other.timestamp
+            && self.track.clone().id == other.track.clone().id;
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct ScrobbleInfo {
+    pub timestamp: DateTime<Utc>,
+    pub duration_secs: f64,
+    pub track: TrackInfo,
 }
 
 #[derive(Clone, Debug)]
 pub struct Scrobble {
     pub timestamp: DateTime<Utc>,
-    pub duration_secs: f64,
-    pub track: TrackInfo,
+    pub duration_secs: Duration,
+    pub track: String,
+    pub cover: String,
+    pub album: String,
+    pub artists: Vec<String>,
+    pub tags: Vec<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -77,24 +73,7 @@ pub struct Album {
 }
 
 #[derive(Clone, Debug)]
-pub struct AlbumInfo {
-    pub id: String,
-    pub title: String,
-    pub artists: Vec<Artist>,
-    pub tracks: Vec<Track>,
-    pub cover: String,
-}
-
-#[derive(Clone, Debug)]
 pub struct Artist {
     pub id: String,
     pub name: String,
-}
-
-#[derive(Clone, Debug)]
-pub struct ArtistInfo {
-    pub id: String,
-    pub name: String,
-    pub albums: Vec<Album>,
-    pub tracks: Vec<TrackInfo>,
 }

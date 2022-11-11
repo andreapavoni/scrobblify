@@ -45,7 +45,7 @@ impl HttpUi {
             .parse::<SocketAddr>()
             .expect(format!("unable to parse socket address with `{}:{}`", host, port).as_str());
 
-        tracing::info!("server started and listening on {}", addr);
+        tracing::info!(msg = "server started", address = addr.to_string());
 
         axum::Server::bind(&addr)
             .serve(self.router.clone().into_make_service())

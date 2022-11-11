@@ -1,5 +1,7 @@
 pub mod entities;
 pub mod migrator;
-pub mod repository;
+mod repository;
+mod shims;
 
+pub use repository::Repository;
 pub use sea_orm;

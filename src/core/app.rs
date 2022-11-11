@@ -1,17 +1,18 @@
 use anyhow::Result;
 
 use crate::bridge::spotify::SpotifyClient;
+use crate::domain::models::HistoryPlayedTrack;
 use crate::domain::{
     self,
     bridge::spotify::SpotifyApi,
     db::Repository,
-    models::{CurrentPlayingTrack, Scrobble},
+    models::{CurrentPlayingTrack, ScrobbleInfo},
 };
 
 pub struct App {
-    pub current_track: CurrentPlayingTrack,
+    current_track: Option<CurrentPlayingTrack>,
     db: Box<dyn Repository>,
-    pub spotify: SpotifyClient,
+    spotify: SpotifyClient,
 }
 
 impl App {
@@ -22,50 +23,53 @@ impl App {
             current_track: Default::default(),
         }
     }
+
+    pub fn get_current_track(&self) -> &Option<CurrentPlayingTrack> {
+        &self.current_track
+    }
+
+    pub fn set_current_track(&mut self, current_track: Option<CurrentPlayingTrack>) {
+        self.current_track = current_track;
+    }
 }
 
 #[async_trait::async_trait]
 impl domain::app::App for App {
-    async fn scrobble(&self, scrobble: Scrobble) -> Result<()> {
-        let mut track_info = scrobble.track;
+    async fn get_recently_played(&self) -> Result<Vec<HistoryPlayedTrack>> {
+        if let Some(scrobble) = self.db.get_last_scrobble().await? {
+            let recently_played = self.spotify.get_recently_played(scrobble.timestamp).await?;
 
-        self.db.insert_track(track_info.clone().into()).await?;
-
-        let mut artists_ids: Vec<&str> = vec![];
-        for artist in track_info.artists.iter() {
-            // TODO: if an artist is already on db, maybe we don't need to fetch tags
-            // same for track
-            self.db.insert_artist(artist.clone()).await?;
-            artists_ids.push(&artist.id);
+            return Ok(recently_played);
         }
-
-        // fetching genres from the artist profile, it's the most reliable way to get some tags
-        let tags = self.spotify.get_tags(artists_ids).await?;
-        for tag in tags.iter() {
-            self.db.insert_tag(tag.clone()).await?;
-        }
-        track_info.tags = tags.clone();
-
-        self.db.insert_album(track_info.album.clone()).await?;
-        self.db.insert_scrobble(track_info.clone()).await?;
-
-        Ok(())
+        Ok(vec![])
     }
 
-    async fn scrobble_recently_played(&self) -> Result<()> {
-        if let Some(timestamp) = self.db.get_last_scrobble_timestamp().await? {
-            let recently_played = self.spotify.get_recently_played(timestamp).await?;
+    async fn get_currently_playing(&self) -> Result<Option<CurrentPlayingTrack>> {
+        self.spotify.get_currently_playing().await
+    }
 
-            for played in recently_played {
-                let scrobble = Scrobble {
-                    timestamp: played.played_at,
-                    duration_secs: played.track.duration_secs.as_secs_f64(),
-                    track: played.track,
-                };
+    async fn scrobble(&self, scrobble: ScrobbleInfo) -> Result<()> {
+        let mut track_info = scrobble.track;
 
-                self.scrobble(scrobble).await?;
+        // if a track is already on db, we don't need to fetch tags and insert stuff on db again
+        if let Ok(None) = self.db.get_track_by_id(track_info.clone().id).await {
+            self.db.insert_track(track_info.clone().into()).await?;
+            let mut artists_ids: Vec<&str> = vec![];
+            for artist in track_info.artists.iter() {
+                self.db.insert_artist(artist.clone()).await?;
+                artists_ids.push(&artist.id);
             }
+
+            // fetching genres from the artist profile, it's the most reliable way to get some tags
+            let tags = self.spotify.get_tags(artists_ids).await?;
+            for tag in tags.iter() {
+                self.db.insert_tag(tag.clone()).await?;
+            }
+            track_info.tags = tags.clone();
+
+            self.db.insert_album(track_info.album.clone()).await?;
         }
+        self.db.insert_scrobble(track_info.clone()).await?;
 
         Ok(())
     }

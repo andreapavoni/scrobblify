@@ -9,22 +9,10 @@ use crate::domain::{
     models::{Album, Artist, CurrentPlayingTrack, HistoryPlayedTrack, TrackInfo},
 };
 
-impl TryFrom<Option<CurrentlyPlayingContext>> for CurrentPlayingTrack {
+impl TryFrom<CurrentlyPlayingContext> for CurrentPlayingTrack {
     type Error = anyhow::Error;
 
-    fn try_from(opt_cpt: Option<CurrentlyPlayingContext>) -> Result<Self> {
-        let cpt = match opt_cpt {
-            Some(cpt) => cpt,
-            None => {
-                return Ok(CurrentPlayingTrack {
-                    track: None,
-                    timestamp: None,
-                    progress_secs: None,
-                    scrobbled: false,
-                })
-            }
-        };
-
+    fn try_from(cpt: CurrentlyPlayingContext) -> Result<Self> {
         let full_track: FullTrack = match cpt.item {
             Some(PlayableItem::Track(ft)) => ft,
             _ => return Err(anyhow::Error::new(SpotifyError::TrackResponse)),
@@ -36,9 +24,9 @@ impl TryFrom<Option<CurrentlyPlayingContext>> for CurrentPlayingTrack {
         };
 
         Ok(CurrentPlayingTrack {
-            track: Some(full_track.into()),
-            timestamp: Some(cpt.timestamp),
-            progress_secs: Some(progress_secs),
+            track: full_track.into(),
+            timestamp: cpt.timestamp,
+            progress_secs,
             scrobbled: false,
         })
     }
