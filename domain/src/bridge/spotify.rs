@@ -1,7 +1,7 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 
-use crate::domain::models::{CurrentPlayingTrack, HistoryPlayedTrack, Tag};
+use crate::models::{CurrentPlayingTrack, HistoryPlayedTrack, Tag};
 #[async_trait::async_trait]
 pub trait SpotifyApi {
     fn has_auth(&self) -> bool;

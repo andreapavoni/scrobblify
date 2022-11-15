@@ -7,7 +7,7 @@ use tokio::{
 };
 
 use super::App;
-use crate::domain::{
+use scrobblify_domain::{
     app::App as DomainApp,
     models::{CurrentPlayingTrack, ScrobbleInfo},
 };

@@ -13,6 +13,10 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[workspace]
+
+members = ["core", "db", "domain", "bridge", "web"]
+
 [profile.release]
 panic = "abort"
 
@@ -21,49 +25,12 @@ name = "scrobblify"
 path = "src/main.rs"
 
 [dependencies]
-# async runtime
+scrobblify-core = { path = "core" }
+scrobblify-db = { path = "db" }
+scrobblify-web = { path = "web" }
+scrobblify-bridge = { path = "bridge" }
 tokio = { version = "1.0", features = ["full"] }
 futures = "0.3"
-async-trait = "0.1"
-# web framework
-axum = { version = "0.6.0-rc.2", features = ["ws", "headers", "json"] }
-axum-extra = { version = "0.4.0-rc.1", features = ["spa"] }
-tower-http = { version = "0.3.0", features = ["trace", "set-header"] }
-# html templates
-askama = "0.11"
-# spotify API
-rspotify = { version = "0.11", features = [
-  "__async",
-  "client-reqwest",
-  "reqwest-native-tls",
-] }
-# database
-sea-orm = { version = "^0.9.0", features = [
-  "macros",
-  "runtime-tokio-native-tls",
-  "sqlx-sqlite",
-], default-features = false }
-sea-orm-migration = { version = "^0.9.0", features = [
-  "runtime-tokio-native-tls",
-  "sqlx-sqlite",
-] }
-sea-query = { version = "0.27", features = [
-  "thread-safe",
-  "backend-sqlite",
-  "with-chrono",
-] }
-# Errors
-thiserror = "1.0"
-# Results
 anyhow = "1.0"
-# JSON handling
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-# HTTP client
-reqwest = { version = "0.11", features = ["json"] }
-reqwest-middleware = "0.1.1"
-reqwest-retry = "0.1"
-# Date and time
-chrono = { version = "0.4", features = ["serde"] }
 tracing = { version = "0.1", features = ["log"] }                   # Logging & tracing
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

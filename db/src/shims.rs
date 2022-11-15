@@ -1,11 +1,9 @@
+use scrobblify_domain::models::{Album, Artist, Tag, Track};
 use std::time::Duration;
 
-use crate::{
-    db::entities::{
-        albums::Model as AlbumsModel, artists::Model as ArtistsModel, tags::Model as TagsModel,
-        tracks::Model as TracksModel,
-    },
-    domain::models::{Album, Artist, Tag, Track},
+use crate::entities::{
+    albums::Model as AlbumsModel, artists::Model as ArtistsModel, tags::Model as TagsModel,
+    tracks::Model as TracksModel,
 };
 
 impl From<TagsModel> for Tag {

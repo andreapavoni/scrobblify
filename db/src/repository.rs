@@ -1,30 +1,26 @@
 use anyhow::Result;
 use chrono::{DateTime, NaiveDateTime, Utc};
+use scrobblify_domain::{
+    self,
+    db::ParamsForStatsQuery,
+    models::{Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo},
+};
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, DbBackend,
     EntityTrait, FromQueryResult, Statement,
 };
 use std::{env, str::FromStr, time::Duration};
 
-use crate::{
-    db::entities::{
-        albums::{self, ActiveModel as AlbumsModel, Entity as AlbumEntity},
-        albums_artists::{self, ActiveModel as AlbumsArtistsModel, Entity as AlbumsArtistsEntity},
-        albums_tracks::{self, ActiveModel as AlbumsTracksModel, Entity as AlbumsTracksEntity},
-        artists::{self, ActiveModel as ArtistsModel, Entity as ArtistEntity},
-        artists_tracks::{self, ActiveModel as ArtistsTracksModel, Entity as ArtistsTracksEntity},
-        scrobbles::ActiveModel as ScrobblesModel,
-        tags::{self, ActiveModel as TagsModel, Entity as TagEntity},
-        tags_tracks::{self, ActiveModel as TagsTracksModel, Entity as TagsTracksEntity},
-        tracks::{self, ActiveModel as TracksModel, Entity as TrackEntity},
-    },
-    domain::{
-        self,
-        db::ParamsForStatsQuery,
-        models::{
-            Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo,
-        },
-    },
+use crate::entities::{
+    albums::{self, ActiveModel as AlbumsModel, Entity as AlbumEntity},
+    albums_artists::{self, ActiveModel as AlbumsArtistsModel, Entity as AlbumsArtistsEntity},
+    albums_tracks::{self, ActiveModel as AlbumsTracksModel, Entity as AlbumsTracksEntity},
+    artists::{self, ActiveModel as ArtistsModel, Entity as ArtistEntity},
+    artists_tracks::{self, ActiveModel as ArtistsTracksModel, Entity as ArtistsTracksEntity},
+    scrobbles::ActiveModel as ScrobblesModel,
+    tags::{self, ActiveModel as TagsModel, Entity as TagEntity},
+    tags_tracks::{self, ActiveModel as TagsTracksModel, Entity as TagsTracksEntity},
+    tracks::{self, ActiveModel as TracksModel, Entity as TrackEntity},
 };
 
 #[derive(Clone)]
@@ -88,7 +84,7 @@ struct PopularArtistQueryResult {
 }
 
 #[async_trait::async_trait]
-impl domain::db::Repository for Repository {
+impl scrobblify_domain::db::Repository for Repository {
     async fn insert_track(&self, track: Track) -> Result<()> {
         let new_track = TracksModel {
             id: ActiveValue::Set(track.id),
@@ -343,8 +339,8 @@ impl domain::db::Repository for Repository {
 
 /// Helper function to cast a sea_orm::DbErr into a domain Database Error.
 /// This requires casting the sea_orm::DbErr into anyhow::Error first.
-fn to_db_error(e: sea_orm::DbErr) -> domain::errors::DatabaseError {
-    domain::errors::DatabaseError::from(anyhow::Error::from(e))
+fn to_db_error(e: sea_orm::DbErr) -> scrobblify_domain::errors::DatabaseError {
+    scrobblify_domain::errors::DatabaseError::from(anyhow::Error::from(e))
 }
 
 fn build_dates_range(opts: ParamsForStatsQuery) -> (NaiveDateTime, NaiveDateTime) {

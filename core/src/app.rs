@@ -1,12 +1,13 @@
 use anyhow::Result;
 
-use crate::bridge::spotify::SpotifyClient;
-use crate::domain::models::{HistoryPlayedTrack, StatsArtist, StatsTag, StatsTrack};
-use crate::domain::{
+use scrobblify_bridge::spotify::SpotifyClient;
+use scrobblify_domain::{
     self,
     bridge::spotify::SpotifyApi,
     db::{ParamsForStatsQuery, Repository},
-    models::{CurrentPlayingTrack, ScrobbleInfo},
+    models::{
+        CurrentPlayingTrack, HistoryPlayedTrack, ScrobbleInfo, StatsArtist, StatsTag, StatsTrack,
+    },
 };
 
 pub struct App {
@@ -26,7 +27,7 @@ impl App {
 }
 
 #[async_trait::async_trait]
-impl domain::app::App for App {
+impl scrobblify_domain::app::App for App {
     fn get_current_track(&self) -> &Option<CurrentPlayingTrack> {
         &self.current_track
     }

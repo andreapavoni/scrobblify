@@ -1,0 +1,28 @@
+[package]
+name = "scrobblify-db"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+scrobblify-domain = { path = "../domain" }
+sea-orm = { version = "^0.9.0", features = [
+  "macros",
+  "runtime-tokio-native-tls",
+  "sqlx-sqlite",
+], default-features = false }
+sea-orm-migration = { version = "^0.9.0", features = [
+  "runtime-tokio-native-tls",
+  "sqlx-sqlite",
+] }
+sea-query = { version = "0.27", features = [
+  "thread-safe",
+  "backend-sqlite",
+  "with-chrono",
+] }
+
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+async-trait = "0.1"
+tracing = { version = "0.1", features = ["log"] }

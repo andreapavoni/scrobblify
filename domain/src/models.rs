@@ -60,6 +60,17 @@ pub struct TrackInfo {
     pub cover: String,
 }
 
+impl From<TrackInfo> for Track {
+    fn from(track_info: TrackInfo) -> Self {
+        Track {
+            id: track_info.id,
+            title: track_info.title,
+            duration_secs: track_info.duration_secs,
+            isrc: track_info.isrc,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Tag {
     pub id: String,

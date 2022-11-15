@@ -7,16 +7,15 @@ use axum::{
     Router,
 };
 use chrono::NaiveDate;
-use serde::Deserialize;
-use std::{env, net::SocketAddr, sync::Arc};
-use tokio::sync::Mutex;
-use tower_http::set_header::SetResponseHeaderLayer;
-
-use crate::domain::{
+use scrobblify_domain::{
     app::App as DomainApp,
     db::ParamsForStatsQuery,
     models::{StatsArtist, StatsTag, StatsTrack},
 };
+use serde::Deserialize;
+use std::{env, net::SocketAddr, sync::Arc};
+use tokio::sync::Mutex;
+use tower_http::set_header::SetResponseHeaderLayer;
 
 type App = Arc<Mutex<dyn DomainApp>>;
 

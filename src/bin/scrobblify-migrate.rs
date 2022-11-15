@@ -1,5 +1,5 @@
-use scrobblify::db::migrator;
-use scrobblify::db::migrator::sea_orm_migration::prelude::*;
+use scrobblify_db::migrator;
+use scrobblify_db::migrator::sea_orm_migration::prelude::*;
 use std::env;
 
 #[tokio::main]

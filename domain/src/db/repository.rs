@@ -1,7 +1,7 @@
 use anyhow::Result;
 use chrono::{NaiveDate, Utc};
 
-use crate::domain::models::{
+use crate::models::{
     Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo,
 };
 

@@ -1,16 +1,15 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use rspotify::{
-    model::{AdditionalType, ArtistId, TimeLimits},
+    model::{AdditionalType, ArtistId, CurrentlyPlayingContext, PlayHistory, TimeLimits},
     prelude::*,
     scopes, AuthCodeSpotify, Config, Credentials, OAuth, Token,
 };
-use std::{env, fs, path::PathBuf};
-
-use crate::domain::{
+use scrobblify_domain::{
     bridge::spotify::SpotifyApi,
     models::{CurrentPlayingTrack, HistoryPlayedTrack, Tag},
 };
+use std::{env, fs, path::PathBuf};
 
 #[derive(Clone, Debug)]
 struct SpotifyClientConfig {
@@ -118,7 +117,12 @@ impl SpotifyApi for SpotifyClient {
             .current_playing(None, Some(&[AdditionalType::Track]))
             .await?
         {
-            Some(cp) => Some(cp.try_into()?),
+            Some(cp) => Some(
+                <CurrentlyPlayingContext as TryInto<super::shims::CurrentPlayingTrack>>::try_into(
+                    cp,
+                )?
+                .into(),
+            ),
             None => None,
         };
 
@@ -137,7 +141,14 @@ impl SpotifyApi for SpotifyClient {
             .await?
             .items;
 
-        Ok(items.into_iter().map(|ph| ph.try_into().unwrap()).collect())
+        let history: Vec<HistoryPlayedTrack> = items
+            .into_iter()
+            .map(|ph| <PlayHistory as TryInto<super::shims::HistoryPlayedTrack>>::try_into(ph))
+            .filter(|ph| ph.is_ok())
+            .map(|ph| ph.unwrap())
+            .map(|ph| ph.into())
+            .collect();
+        Ok(history)
     }
 
     async fn get_tags(&self, artists_ids: Vec<&str>) -> Result<Vec<Tag>> {

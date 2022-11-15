@@ -1,14 +1,12 @@
 use anyhow::Result;
+
+use scrobblify_bridge::spotify::SpotifyClient;
+use scrobblify_core::{App, Scrobbler};
+use scrobblify_db::Repository;
+use scrobblify_web::HttpUi;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
-use scrobblify::{
-    bridge::spotify::SpotifyClient,
-    core::{App, Scrobbler},
-    db::Repository,
-    web::HttpUi,
-};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -21,11 +19,11 @@ async fn main() -> Result<()> {
 
     let db = Repository::new_from_env()
         .await
-        .expect("Failed to create repository");
+        .expect("failed to create repository");
 
     let spotify = SpotifyClient::new_from_env()
         .await
-        .expect("Failed to initialize spotify client");
+        .expect("failed to initialize spotify client");
 
     let app = Arc::new(Mutex::new(App::new(Box::new(db), spotify)));
     let http_ui = HttpUi::new(app.clone());
