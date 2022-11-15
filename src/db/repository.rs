@@ -260,7 +260,8 @@ impl domain::db::Repository for Repository {
     }
 
     async fn stats_for_popular_tags(&self, opts: ParamsForStatsQuery) -> Vec<StatsTag> {
-        let (start, end) = build_dates_range(opts);
+        let (start, end) = build_dates_range(opts.clone());
+        let limit = opts.limit.unwrap_or(10);
 
         match PopularTagQueryResult::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
@@ -268,6 +269,7 @@ impl domain::db::Repository for Repository {
             vec![
                 sea_orm::Value::from(start.to_string()),
                 sea_orm::Value::from(end.to_string()),
+                sea_orm::Value::from(limit),
             ],
         ))
         .all(&self.conn)
@@ -285,7 +287,8 @@ impl domain::db::Repository for Repository {
     }
 
     async fn stats_for_popular_tracks(&self, opts: ParamsForStatsQuery) -> Vec<StatsTrack> {
-        let (start, end) = build_dates_range(opts);
+        let (start, end) = build_dates_range(opts.clone());
+        let limit = opts.limit.unwrap_or(10);
 
         match PopularTrackQueryResult::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
@@ -293,6 +296,7 @@ impl domain::db::Repository for Repository {
             vec![
                 sea_orm::Value::from(start.to_string()),
                 sea_orm::Value::from(end.to_string()),
+                sea_orm::Value::from(limit),
             ],
         ))
         .all(&self.conn)
@@ -310,7 +314,8 @@ impl domain::db::Repository for Repository {
     }
 
     async fn stats_for_popular_artists(&self, opts: ParamsForStatsQuery) -> Vec<StatsArtist> {
-        let (start, end) = build_dates_range(opts);
+        let (start, end) = build_dates_range(opts.clone());
+        let limit = opts.limit.unwrap_or(10);
 
         match PopularArtistQueryResult::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
@@ -318,6 +323,7 @@ impl domain::db::Repository for Repository {
             vec![
                 sea_orm::Value::from(start.to_string()),
                 sea_orm::Value::from(end.to_string()),
+                sea_orm::Value::from(limit),
             ],
         ))
         .all(&self.conn)

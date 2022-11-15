@@ -8,4 +8,4 @@ FROM scrobbles AS s
   JOIN artists AS t ON t.id = tt.artist_id
 GROUP BY t.id
 ORDER BY score DESC, listened_secs DESC
-LIMIT 10;
+LIMIT ?;

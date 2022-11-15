@@ -7,4 +7,4 @@ FROM scrobbles AS s
   JOIN tags AS t ON t.id = tt.tag_id
 GROUP BY t.id
 ORDER BY score DESC, listened_secs DESC
-LIMIT 10;
+LIMIT ?;

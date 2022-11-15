@@ -7,4 +7,4 @@ FROM scrobbles AS s
   JOIN tracks AS t ON t.id = s.track_id
 GROUP BY t.id
 ORDER BY score DESC, listened_secs DESC
-LIMIT 10;
+LIMIT ?;
