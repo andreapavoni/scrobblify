@@ -1,10 +1,10 @@
 use anyhow::Result;
-use chrono::{NaiveDateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, DbBackend,
     EntityTrait, FromQueryResult, Statement,
 };
-use std::env;
+use std::{env, str::FromStr, time::Duration};
 
 use crate::{
     db::entities::{
@@ -54,37 +54,37 @@ impl Repository {
 }
 
 #[derive(Debug, FromQueryResult)]
-pub struct ScrobbleQueryResult {
-    pub track: String,
-    pub duration_secs: f64,
-    pub cover: String,
-    pub artists: String,
-    pub album: String,
-    pub tags: String,
-    pub timestamp: String,
+struct ScrobbleQueryResult {
+    track: String,
+    duration_secs: f64,
+    cover: String,
+    artists: String,
+    album: String,
+    tags: String,
+    timestamp: String,
 }
 
 #[derive(Debug, FromQueryResult)]
-pub struct PopularTagQueryResult {
-    pub tag: String,
-    pub score: u32,
-    pub listened_secs: f64,
+struct PopularTagQueryResult {
+    tag: String,
+    score: u32,
+    listened_secs: f64,
 }
 
 #[derive(Debug, FromQueryResult)]
-pub struct PopularTrackQueryResult {
-    pub id: String,
-    pub title: String,
-    pub score: u32,
-    pub listened_secs: f64,
+struct PopularTrackQueryResult {
+    id: String,
+    title: String,
+    score: u32,
+    listened_secs: f64,
 }
 
 #[derive(Debug, FromQueryResult)]
-pub struct PopularArtistQueryResult {
-    pub id: String,
-    pub name: String,
-    pub score: u32,
-    pub listened_secs: f64,
+struct PopularArtistQueryResult {
+    id: String,
+    name: String,
+    score: u32,
+    listened_secs: f64,
 }
 
 #[async_trait::async_trait]
@@ -439,4 +439,62 @@ async fn insert_entity_links(conn: &DatabaseConnection, track_info: TrackInfo) -
         .map_err(to_db_error)?;
 
     Ok(())
+}
+
+impl From<ScrobbleQueryResult> for Scrobble {
+    fn from(s: ScrobbleQueryResult) -> Self {
+        Self {
+            timestamp: DateTime::from_str(s.timestamp.as_str()).unwrap(),
+            duration_secs: Duration::from_secs_f64(s.duration_secs),
+            track: s.track,
+            cover: s.cover,
+            album: s.album,
+            artists: s
+                .artists
+                .as_str()
+                .split(',')
+                .into_iter()
+                .map(|t| t.to_string())
+                .collect(),
+            tags: s
+                .tags
+                .as_str()
+                .split(',')
+                .into_iter()
+                .map(|t| t.to_string())
+                .collect(),
+        }
+    }
+}
+
+impl From<PopularTagQueryResult> for StatsTag {
+    fn from(t: PopularTagQueryResult) -> Self {
+        Self {
+            name: t.tag,
+            score: t.score,
+            listened_secs: t.listened_secs,
+        }
+    }
+}
+
+impl From<PopularTrackQueryResult> for StatsTrack {
+    fn from(t: PopularTrackQueryResult) -> Self {
+        Self {
+            id: t.id,
+            title: t.title,
+            score: t.score,
+            listened_secs: t.listened_secs,
+        }
+    }
+}
+
+impl From<PopularArtistQueryResult> for StatsArtist {
+    fn from(t: PopularArtistQueryResult) -> Self {
+        Self {
+            id: t.id,
+            name: t.name,
+            score: t.score,
+            listened_secs: t.listened_secs,
+        }
+    }
 }

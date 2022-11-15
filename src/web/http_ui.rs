@@ -68,11 +68,9 @@ async fn index_handler(State(app): State<App>) -> Response {
         return HtmlTemplate(AuthorizeTemplate { auth_url }).into_response();
     }
 
-    let start = NaiveDate::from_ymd(2022, 11, 1);
-    let end = NaiveDate::from_ymd(2022, 11, 14);
     let opts = ParamsForStatsQuery {
-        start,
-        end,
+        start: NaiveDate::from_ymd(2022, 11, 1),
+        end: NaiveDate::from_ymd(2022, 11, 15),
         limit: None,
     };
 

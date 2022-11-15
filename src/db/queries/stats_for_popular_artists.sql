@@ -6,6 +6,8 @@ SELECT
 FROM scrobbles AS s
   JOIN artists_tracks AS tt ON s.track_id = tt.track_id
   JOIN artists AS t ON t.id = tt.artist_id
+WHERE s.timestamp >= ?
+  AND s.timestamp <= ?
 GROUP BY t.id
 ORDER BY score DESC, listened_secs DESC
 LIMIT ?;
