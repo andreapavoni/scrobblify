@@ -11,6 +11,14 @@ use scrobblify_domain::{
 };
 use std::{env, fs, path::PathBuf};
 
+#[derive(thiserror::Error, Debug)]
+pub enum SpotifyError {
+    #[error("failed to initialize auth")]
+    Auth(#[from] rspotify::ClientError),
+    #[error("failed to parse track response")]
+    TrackResponse,
+}
+
 #[derive(Clone, Debug)]
 struct SpotifyClientConfig {
     client_id: String,

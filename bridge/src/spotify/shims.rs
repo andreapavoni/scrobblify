@@ -4,15 +4,13 @@ use rspotify::model::{
     CurrentlyPlayingContext, FullTrack, PlayHistory, PlayableItem, SimplifiedAlbum,
     SimplifiedArtist,
 };
-use scrobblify_domain::{
-    errors::SpotifyError,
-    models::{
-        Album as DomainAlbum, Artist as DomainArtist,
-        CurrentPlayingTrack as DomainCurrentPlayingTrack,
-        HistoryPlayedTrack as DomainHistoryPlayedTrack, Tag, TrackInfo as DomainTrackInfo,
-    },
+use scrobblify_domain::models::{
+    Album as DomainAlbum, Artist as DomainArtist, CurrentPlayingTrack as DomainCurrentPlayingTrack,
+    HistoryPlayedTrack as DomainHistoryPlayedTrack, Tag, TrackInfo as DomainTrackInfo,
 };
 use std::time::Duration;
+
+use super::client::SpotifyError;
 
 // FIXME: define new types in this crate, then (maybe) it's possible to build shims
 

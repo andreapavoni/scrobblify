@@ -7,11 +7,13 @@ edition = "2021"
 
 [dependencies]
 scrobblify-domain = { path = "../domain" }
+
+thiserror = "1.0"
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+async-trait = "0.1"
 rspotify = { version = "0.11", features = [
   "__async",
   "client-reqwest",
   "reqwest-native-tls",
 ] }
-anyhow = "1.0"
-chrono = { version = "0.4", features = ["serde"] }
-async-trait = "0.1"

@@ -7,6 +7,11 @@ edition = "2021"
 
 [dependencies]
 scrobblify-domain = { path = "../domain" }
+
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+async-trait = "0.1"
+tracing = { version = "0.1", features = ["log"] }
 sea-orm = { version = "^0.9.0", features = [
   "macros",
   "runtime-tokio-native-tls",
@@ -21,8 +26,3 @@ sea-query = { version = "0.27", features = [
   "backend-sqlite",
   "with-chrono",
 ] }
-
-anyhow = "1.0"
-chrono = { version = "0.4", features = ["serde"] }
-async-trait = "0.1"
-tracing = { version = "0.1", features = ["log"] }

@@ -14,8 +14,7 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace]
-
-members = ["core", "db", "domain", "bridge", "web"]
+members = ["domain", "core", "db", "bridge", "web"]
 
 [profile.release]
 panic = "abort"
@@ -29,6 +28,7 @@ scrobblify-core = { path = "core" }
 scrobblify-db = { path = "db" }
 scrobblify-web = { path = "web" }
 scrobblify-bridge = { path = "bridge" }
+
 tokio = { version = "1.0", features = ["full"] }
 futures = "0.3"
 anyhow = "1.0"
