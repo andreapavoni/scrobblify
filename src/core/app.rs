@@ -1,12 +1,11 @@
 use anyhow::Result;
-use chrono::NaiveDate;
 
 use crate::bridge::spotify::SpotifyClient;
 use crate::domain::models::{HistoryPlayedTrack, StatsArtist, StatsTag, StatsTrack};
 use crate::domain::{
     self,
     bridge::spotify::SpotifyApi,
-    db::Repository,
+    db::{ParamsForStatsQuery, Repository},
     models::{CurrentPlayingTrack, ScrobbleInfo},
 };
 
@@ -24,18 +23,18 @@ impl App {
             current_track: Default::default(),
         }
     }
-
-    pub fn get_current_track(&self) -> &Option<CurrentPlayingTrack> {
-        &self.current_track
-    }
-
-    pub fn set_current_track(&mut self, current_track: Option<CurrentPlayingTrack>) {
-        self.current_track = current_track;
-    }
 }
 
 #[async_trait::async_trait]
 impl domain::app::App for App {
+    fn get_current_track(&self) -> &Option<CurrentPlayingTrack> {
+        &self.current_track
+    }
+
+    fn set_current_track(&mut self, current_track: Option<CurrentPlayingTrack>) {
+        self.current_track = current_track;
+    }
+
     // Spotify API
     async fn get_recently_played(&self) -> Result<Vec<HistoryPlayedTrack>> {
         if let Some(scrobble) = self.db.get_last_scrobble().await? {
@@ -91,19 +90,15 @@ impl domain::app::App for App {
     }
 
     // Stats
-    async fn stats_for_popular_tracks(&self, start: NaiveDate, end: NaiveDate) -> Vec<StatsTrack> {
-        self.db.stats_for_popular_tracks(start, end).await
+    async fn stats_for_popular_tracks(&self, opts: ParamsForStatsQuery) -> Vec<StatsTrack> {
+        self.db.stats_for_popular_tracks(opts).await
     }
 
-    async fn stats_for_popular_tags(&self, start: NaiveDate, end: NaiveDate) -> Vec<StatsTag> {
-        self.db.stats_for_popular_tags(start, end).await
+    async fn stats_for_popular_tags(&self, opts: ParamsForStatsQuery) -> Vec<StatsTag> {
+        self.db.stats_for_popular_tags(opts).await
     }
 
-    async fn stats_for_popular_artists(
-        &self,
-        start: NaiveDate,
-        end: NaiveDate,
-    ) -> Vec<StatsArtist> {
-        self.db.stats_for_popular_artists(start, end).await
+    async fn stats_for_popular_artists(&self, opts: ParamsForStatsQuery) -> Vec<StatsArtist> {
+        self.db.stats_for_popular_artists(opts).await
     }
 }

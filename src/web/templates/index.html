@@ -1,0 +1,50 @@
+<h1>TOP TRACKS</h1>
+
+<table style="width: 100%; border: 1px solid black">
+  <tr>
+    <th style="border: 1px solid black">TITLE</th>
+    <th style="border: 1px solid black">SCORE</th>
+    <th style="border: 1px solid black">LISTENED (HH:MM)</th>
+  </tr>
+  {%- for item in top_tracks %}
+  <tr>
+    <td style="border: 1px solid black">{{item.title}}</td>
+    <td style="border: 1px solid black">{{item.score}}</td>
+    <td style="border: 1px solid black">{{item.listened_secs|duration}}</td>
+  </tr>
+  {%- endfor %}
+</table>
+
+<h1>TOP TAGS</h1>
+
+<table style="width: 100%; border: 1px solid black">
+  <tr>
+    <th style="border: 1px solid black">NAME</th>
+    <th style="border: 1px solid black">SCORE</th>
+    <th style="border: 1px solid black">LISTENED (HH:MM)</th>
+  </tr>
+  {%- for item in top_tags %}
+  <tr>
+    <td style="border: 1px solid black">{{item.name}}</td>
+    <td style="border: 1px solid black">{{item.score}}</td>
+    <td style="border: 1px solid black">{{item.listened_secs|duration}}</td>
+  </tr>
+  {%- endfor %}
+</table>
+
+<h1>TOP ARTISTS</h1>
+
+<table style="width: 100%; border: 1px solid black">
+  <tr>
+    <th style="border: 1px solid black">NAME</th>
+    <th style="border: 1px solid black">SCORE</th>
+    <th style="border: 1px solid black">LISTENED (HH:MM)</th>
+  </tr>
+  {%- for item in top_artists %}
+  <tr>
+    <td style="border: 1px solid black">{{item.name}}</td>
+    <td style="border: 1px solid black">{{item.score}}</td>
+    <td style="border: 1px solid black">{{item.listened_secs|duration}}</td>
+  </tr>
+  {%- endfor %}
+</table>

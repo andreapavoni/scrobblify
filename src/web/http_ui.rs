@@ -6,12 +6,17 @@ use axum::{
     routing::get,
     Router,
 };
+use chrono::NaiveDate;
 use serde::Deserialize;
 use std::{env, net::SocketAddr, sync::Arc};
 use tokio::sync::Mutex;
 use tower_http::set_header::SetResponseHeaderLayer;
 
-use crate::domain::app::App as DomainApp;
+use crate::domain::{
+    app::App as DomainApp,
+    db::ParamsForStatsQuery,
+    models::{StatsArtist, StatsTag, StatsTrack},
+};
 
 type App = Arc<Mutex<dyn DomainApp>>;
 
@@ -63,7 +68,32 @@ async fn index_handler(State(app): State<App>) -> Response {
         return HtmlTemplate(AuthorizeTemplate { auth_url }).into_response();
     }
 
-    HtmlTemplate(HomeTemplate {}).into_response()
+    let start = NaiveDate::from_ymd(2022, 11, 1);
+    let end = NaiveDate::from_ymd(2022, 11, 14);
+    let opts = ParamsForStatsQuery {
+        start,
+        end,
+        limit: None,
+    };
+
+    let top_tracks = app
+        .lock()
+        .await
+        .stats_for_popular_tracks(opts.clone())
+        .await;
+    let top_artists = app
+        .lock()
+        .await
+        .stats_for_popular_artists(opts.clone())
+        .await;
+    let top_tags = app.lock().await.stats_for_popular_tags(opts.clone()).await;
+
+    HtmlTemplate(HomeTemplate {
+        top_tracks,
+        top_artists,
+        top_tags,
+    })
+    .into_response()
 }
 
 #[derive(Debug, Deserialize)]
@@ -113,10 +143,27 @@ struct AuthorizeTemplate {
 
 #[derive(Template)]
 #[template(path = "index.html")]
-struct HomeTemplate {}
+struct HomeTemplate {
+    pub top_tracks: Vec<StatsTrack>,
+    pub top_tags: Vec<StatsTag>,
+    pub top_artists: Vec<StatsArtist>,
+}
 
 #[derive(Template)]
 #[template(path = "error.html")]
 struct ErrorTemplate {
     error: String,
+}
+
+pub mod filters {
+    use std::time::Duration;
+
+    use crate::utils::secs_to_hours_and_minutes;
+
+    pub fn duration(d: &f64) -> askama::Result<String> {
+        let duration_secs = Duration::from_secs_f64(*d);
+        let (hours, minutes) = secs_to_hours_and_minutes(duration_secs);
+
+        Ok(format!("{:02}:{:02}", hours, minutes))
+    }
 }

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{NaiveDate, NaiveDateTime, Utc};
+use chrono::{NaiveDateTime, Utc};
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, DbBackend,
     EntityTrait, FromQueryResult, Statement,
@@ -20,6 +20,7 @@ use crate::{
     },
     domain::{
         self,
+        db::ParamsForStatsQuery,
         models::{
             Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo,
         },
@@ -205,12 +206,8 @@ impl domain::db::Repository for Repository {
         }
     }
 
-    async fn list_scrobbles_by_date_range(
-        &self,
-        date_start: NaiveDate,
-        date_end: NaiveDate,
-    ) -> Vec<Scrobble> {
-        let (start, end) = build_dates_range(date_start, date_end);
+    async fn list_scrobbles_by_date_range(&self, opts: ParamsForStatsQuery) -> Vec<Scrobble> {
+        let (start, end) = build_dates_range(opts);
 
         match ScrobbleQueryResult::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
@@ -253,18 +250,17 @@ impl domain::db::Repository for Repository {
         {
             Ok(scrobbles) => scrobbles.into_iter().map(|s| s.into()).collect(),
             Err(err) => {
-                tracing::error!(msg = "query error", error = format!("{:?}", err));
+                tracing::error!(
+                    msg = "list scrobbles by artist query error",
+                    error = format!("{:?}", err)
+                );
                 vec![]
             }
         }
     }
 
-    async fn stats_for_popular_tags(
-        &self,
-        date_start: NaiveDate,
-        date_end: NaiveDate,
-    ) -> Vec<StatsTag> {
-        let (start, end) = build_dates_range(date_start, date_end);
+    async fn stats_for_popular_tags(&self, opts: ParamsForStatsQuery) -> Vec<StatsTag> {
+        let (start, end) = build_dates_range(opts);
 
         match PopularTagQueryResult::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
@@ -277,20 +273,19 @@ impl domain::db::Repository for Repository {
         .all(&self.conn)
         .await
         {
-            Ok(tags) => tags.into_iter().map(|t| t.into()).collect(),
+            Ok(tracks) => tracks.into_iter().map(|t| t.into()).collect(),
             Err(err) => {
-                tracing::error!(msg = "query error", error = format!("{:?}", err));
+                tracing::error!(
+                    msg = "popular tags query error",
+                    error = format!("{:?}", err)
+                );
                 vec![]
             }
         }
     }
 
-    async fn stats_for_popular_tracks(
-        &self,
-        date_start: NaiveDate,
-        date_end: NaiveDate,
-    ) -> Vec<StatsTrack> {
-        let (start, end) = build_dates_range(date_start, date_end);
+    async fn stats_for_popular_tracks(&self, opts: ParamsForStatsQuery) -> Vec<StatsTrack> {
+        let (start, end) = build_dates_range(opts);
 
         match PopularTrackQueryResult::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
@@ -305,18 +300,17 @@ impl domain::db::Repository for Repository {
         {
             Ok(tracks) => tracks.into_iter().map(|t| t.into()).collect(),
             Err(err) => {
-                tracing::error!(msg = "query error", error = format!("{:?}", err));
+                tracing::error!(
+                    msg = "popular tracks query error",
+                    error = format!("{:?}", err)
+                );
                 vec![]
             }
         }
     }
 
-    async fn stats_for_popular_artists(
-        &self,
-        date_start: NaiveDate,
-        date_end: NaiveDate,
-    ) -> Vec<StatsArtist> {
-        let (start, end) = build_dates_range(date_start, date_end);
+    async fn stats_for_popular_artists(&self, opts: ParamsForStatsQuery) -> Vec<StatsArtist> {
+        let (start, end) = build_dates_range(opts);
 
         match PopularArtistQueryResult::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
@@ -329,9 +323,12 @@ impl domain::db::Repository for Repository {
         .all(&self.conn)
         .await
         {
-            Ok(artists) => artists.into_iter().map(|t| t.into()).collect(),
+            Ok(tracks) => tracks.into_iter().map(|t| t.into()).collect(),
             Err(err) => {
-                tracing::error!(msg = "query error", error = format!("{:?}", err));
+                tracing::error!(
+                    msg = "popular artists query error",
+                    error = format!("{:?}", err)
+                );
                 vec![]
             }
         }
@@ -344,11 +341,11 @@ fn to_db_error(e: sea_orm::DbErr) -> domain::errors::DatabaseError {
     domain::errors::DatabaseError::from(anyhow::Error::from(e))
 }
 
-fn build_dates_range(date_start: NaiveDate, date_end: NaiveDate) -> (NaiveDateTime, NaiveDateTime) {
+fn build_dates_range(opts: ParamsForStatsQuery) -> (NaiveDateTime, NaiveDateTime) {
     let time_start = chrono::NaiveTime::from_hms(0, 0, 0);
-    let start = chrono::NaiveDateTime::new(date_start, time_start);
+    let start = chrono::NaiveDateTime::new(opts.start, time_start);
     let time_end = chrono::NaiveTime::from_hms(23, 59, 59);
-    let end = chrono::NaiveDateTime::new(date_end, time_end);
+    let end = chrono::NaiveDateTime::new(opts.end, time_end);
 
     (start, end)
 }

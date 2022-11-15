@@ -141,7 +141,15 @@ fn calculate_duration(current: &CurrentPlayingTrack, timestamp: DateTime<Utc>) -
     let listened_time = now
         .signed_duration_since(timestamp)
         .to_std()
-        .unwrap()
+        .unwrap_or_else(|err| {
+            tracing::error!(
+                msg = "scrobbler:calculate_duration",
+                timestamp = format!("{:?}", timestamp),
+                now = format!("{:?}", now),
+                error = format!("{:?}", err)
+            );
+            return Duration::new(0, 0);
+        })
         .as_secs();
 
     let duration = current.track.clone().duration_secs.as_secs();
