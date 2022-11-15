@@ -5,11 +5,12 @@ use rspotify::{
     prelude::*,
     scopes, AuthCodeSpotify, Config, Credentials, OAuth, Token,
 };
+use std::{env, fs, path::PathBuf};
+
 use scrobblify_domain::{
     bridge::spotify::SpotifyApi,
     models::{CurrentPlayingTrack, HistoryPlayedTrack, Tag},
 };
-use std::{env, fs, path::PathBuf};
 
 #[derive(thiserror::Error, Debug)]
 pub enum SpotifyError {

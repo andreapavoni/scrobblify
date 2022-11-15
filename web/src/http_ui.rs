@@ -7,15 +7,16 @@ use axum::{
     Router,
 };
 use chrono::NaiveDate;
+use serde::Deserialize;
+use std::{env, net::SocketAddr, sync::Arc};
+use tokio::sync::Mutex;
+use tower_http::set_header::SetResponseHeaderLayer;
+
 use scrobblify_domain::{
     app::App as DomainApp,
     db::ParamsForStatsQuery,
     models::{StatsArtist, StatsTag, StatsTrack},
 };
-use serde::Deserialize;
-use std::{env, net::SocketAddr, sync::Arc};
-use tokio::sync::Mutex;
-use tower_http::set_header::SetResponseHeaderLayer;
 
 type App = Arc<Mutex<dyn DomainApp>>;
 
@@ -157,7 +158,7 @@ pub mod filters {
 
     use crate::utils::secs_to_hours_and_minutes;
 
-    pub fn duration(d: &f64) -> askama::Result<String> {
+    pub fn fmt_secs_to_hhmm(d: &f64) -> askama::Result<String> {
         let duration_secs = Duration::from_secs_f64(*d);
         let (hours, minutes) = secs_to_hours_and_minutes(duration_secs);
 

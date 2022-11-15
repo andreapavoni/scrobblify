@@ -1,6 +1,7 @@
+use std::env;
+
 use scrobblify_db::migrator;
 use scrobblify_db::migrator::sea_orm_migration::prelude::*;
-use std::env;
 
 #[tokio::main]
 async fn main() {

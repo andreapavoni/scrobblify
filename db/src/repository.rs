@@ -1,15 +1,16 @@
 use anyhow::Result;
 use chrono::{DateTime, NaiveDateTime, Utc};
-use scrobblify_domain::{
-    self,
-    db::ParamsForStatsQuery,
-    models::{Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo},
-};
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, DbBackend,
     EntityTrait, FromQueryResult, Statement,
 };
 use std::{env, str::FromStr, time::Duration};
+
+use scrobblify_domain::{
+    self,
+    db::ParamsForStatsQuery,
+    models::{Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo},
+};
 
 use crate::entities::{
     albums::{self, ActiveModel as AlbumsModel, Entity as AlbumEntity},

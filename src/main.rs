@@ -1,12 +1,12 @@
 use anyhow::Result;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use scrobblify_bridge::spotify::SpotifyClient;
 use scrobblify_core::{App, Scrobbler};
 use scrobblify_db::Repository;
 use scrobblify_web::HttpUi;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() -> Result<()> {

@@ -6,11 +6,12 @@ use tokio::{
     time::{sleep, Duration},
 };
 
-use super::App;
 use scrobblify_domain::{
     app::App as DomainApp,
     models::{CurrentPlayingTrack, ScrobbleInfo},
 };
+
+use super::App;
 
 const SCROBBLE_LISTENING_MIN_SECS: u64 = 180;
 const SPOTIFY_POLLING_SECS: u64 = 60;
@@ -75,17 +76,17 @@ impl Scrobbler {
                 app.set_current_track(Some(new_current.clone()));
 
                 let title = new_current.clone().track.title;
-                tracing::debug!(msg = "scrobble: cache track", title = title,);
+                tracing::debug!(msg = "cache track", title = title,);
             }
             ScrobblerResult::NotPlaying => {
                 app.set_current_track(None);
-                tracing::debug!(msg = "scrobble: nothing is playing");
+                tracing::debug!(msg = "ignore: nothing is playing");
             }
             ScrobblerResult::AlreadyScrobbled => {
-                tracing::debug!(msg = "scrobble: skip already scrobbled");
+                tracing::debug!(msg = "skip: already scrobbled");
             }
             ScrobblerResult::NotReadyForScrobble => {
-                tracing::debug!(msg = "scrobble: not ready yet");
+                tracing::debug!(msg = "skip: not ready yet");
             }
         };
 

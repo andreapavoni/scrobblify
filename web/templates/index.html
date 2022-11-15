@@ -10,7 +10,9 @@
   <tr>
     <td style="border: 1px solid black">{{item.title}}</td>
     <td style="border: 1px solid black">{{item.score}}</td>
-    <td style="border: 1px solid black">{{item.listened_secs|duration}}</td>
+    <td style="border: 1px solid black">
+      {{item.listened_secs|fmt_secs_to_hhmm}}
+    </td>
   </tr>
   {%- endfor %}
 </table>
@@ -27,7 +29,9 @@
   <tr>
     <td style="border: 1px solid black">{{item.name}}</td>
     <td style="border: 1px solid black">{{item.score}}</td>
-    <td style="border: 1px solid black">{{item.listened_secs|duration}}</td>
+    <td style="border: 1px solid black">
+      {{item.listened_secs|fmt_secs_to_hhmm}}
+    </td>
   </tr>
   {%- endfor %}
 </table>
@@ -44,7 +48,9 @@
   <tr>
     <td style="border: 1px solid black">{{item.name}}</td>
     <td style="border: 1px solid black">{{item.score}}</td>
-    <td style="border: 1px solid black">{{item.listened_secs|duration}}</td>
+    <td style="border: 1px solid black">
+      {{item.listened_secs|fmt_secs_to_hhmm}}
+    </td>
   </tr>
   {%- endfor %}
 </table>
