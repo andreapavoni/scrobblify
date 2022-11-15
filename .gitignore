@@ -2,3 +2,5 @@ Cargo.lock
 target/
 *.db
 .spotify_cache/
+assets/node_modules/
+web/assets/

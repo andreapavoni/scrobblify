@@ -6,11 +6,16 @@ use axum::{
     routing::get,
     Router,
 };
+use axum_extra::routing::SpaRouter;
 use chrono::NaiveDate;
 use serde::Deserialize;
 use std::{env, net::SocketAddr, sync::Arc};
 use tokio::sync::Mutex;
-use tower_http::set_header::SetResponseHeaderLayer;
+use tower_http::{
+    set_header::SetResponseHeaderLayer,
+    trace::{DefaultOnResponse, TraceLayer},
+    LatencyUnit,
+};
 
 use scrobblify_domain::{
     app::App as DomainApp,
@@ -30,10 +35,19 @@ impl HttpUi {
         let router = Router::with_state(app.clone())
             .route("/auth/callback", get(auth_callback_handler))
             .route("/", get(index_handler))
+            .merge(SpaRouter::new("/assets", "web/assets"))
             .layer(SetResponseHeaderLayer::if_not_present(
                 header::SERVER,
                 HeaderValue::from_static("scrobblify"),
-            ));
+            ))
+            .layer(SetResponseHeaderLayer::if_not_present(
+                header::CACHE_CONTROL,
+                HeaderValue::from_static("max-age=3600"),
+            ))
+            .layer(
+                TraceLayer::new_for_http()
+                    .on_response(DefaultOnResponse::new().latency_unit(LatencyUnit::Micros)),
+            );
 
         HttpUi { router }
     }

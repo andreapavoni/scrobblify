@@ -1,56 +1,90 @@
-<h1>TOP TRACKS</h1>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="[DESCRIPTION]" />
+    <meta name="keywords" content="pavonz, web radio, spotify, music" />
+    <meta name="author" content="Andrea 'pavonz' Pavoni" />
+    <meta name="og:title" property="og:title" content="[DESCRIPTION]" />
+    <title data-suffix="">listen.funky.studio</title>
+    <link rel="stylesheet" href="/assets/app.css" />
+    <script defer type="text/javascript" src="/assets/app.js"></script>
+  </head>
+  <body>
+    <main class="container">
+      <h1>TOP TRACKS</h1>
 
-<table style="width: 100%; border: 1px solid black">
-  <tr>
-    <th style="border: 1px solid black">TITLE</th>
-    <th style="border: 1px solid black">SCORE</th>
-    <th style="border: 1px solid black">LISTENED (HH:MM)</th>
-  </tr>
-  {%- for item in top_tracks %}
-  <tr>
-    <td style="border: 1px solid black">{{item.title}}</td>
-    <td style="border: 1px solid black">{{item.score}}</td>
-    <td style="border: 1px solid black">
-      {{item.listened_secs|fmt_secs_to_hhmm}}
-    </td>
-  </tr>
-  {%- endfor %}
-</table>
+      <table style="width: 100%; border: 1px solid black">
+        <tr>
+          <th style="border: 1px solid black">TITLE</th>
+          <th style="border: 1px solid black">SCORE</th>
+          <th style="border: 1px solid black">LISTENED (HH:MM)</th>
+        </tr>
+        {%- for item in top_tracks %}
+        <tr>
+          <td style="border: 1px solid black">{{item.title}}</td>
+          <td style="border: 1px solid black">{{item.score}}</td>
+          <td style="border: 1px solid black">
+            {{item.listened_secs|fmt_secs_to_hhmm}}
+          </td>
+        </tr>
+        {%- endfor %}
+      </table>
 
-<h1>TOP TAGS</h1>
+      <h1>TOP TAGS</h1>
 
-<table style="width: 100%; border: 1px solid black">
-  <tr>
-    <th style="border: 1px solid black">NAME</th>
-    <th style="border: 1px solid black">SCORE</th>
-    <th style="border: 1px solid black">LISTENED (HH:MM)</th>
-  </tr>
-  {%- for item in top_tags %}
-  <tr>
-    <td style="border: 1px solid black">{{item.name}}</td>
-    <td style="border: 1px solid black">{{item.score}}</td>
-    <td style="border: 1px solid black">
-      {{item.listened_secs|fmt_secs_to_hhmm}}
-    </td>
-  </tr>
-  {%- endfor %}
-</table>
+      <table style="width: 100%; border: 1px solid black">
+        <tr>
+          <th style="border: 1px solid black">NAME</th>
+          <th style="border: 1px solid black">SCORE</th>
+          <th style="border: 1px solid black">LISTENED (HH:MM)</th>
+        </tr>
+        {%- for item in top_tags %}
+        <tr>
+          <td style="border: 1px solid black">{{item.name}}</td>
+          <td style="border: 1px solid black">{{item.score}}</td>
+          <td style="border: 1px solid black">
+            {{item.listened_secs|fmt_secs_to_hhmm}}
+          </td>
+        </tr>
+        {%- endfor %}
+      </table>
 
-<h1>TOP ARTISTS</h1>
+      <h1>TOP ARTISTS</h1>
 
-<table style="width: 100%; border: 1px solid black">
-  <tr>
-    <th style="border: 1px solid black">NAME</th>
-    <th style="border: 1px solid black">SCORE</th>
-    <th style="border: 1px solid black">LISTENED (HH:MM)</th>
-  </tr>
-  {%- for item in top_artists %}
-  <tr>
-    <td style="border: 1px solid black">{{item.name}}</td>
-    <td style="border: 1px solid black">{{item.score}}</td>
-    <td style="border: 1px solid black">
-      {{item.listened_secs|fmt_secs_to_hhmm}}
-    </td>
-  </tr>
-  {%- endfor %}
-</table>
+      <table style="width: 100%; border: 1px solid black">
+        <tr>
+          <th style="border: 1px solid black">NAME</th>
+          <th style="border: 1px solid black">SCORE</th>
+          <th style="border: 1px solid black">LISTENED (HH:MM)</th>
+        </tr>
+        {%- for item in top_artists %}
+        <tr>
+          <td style="border: 1px solid black">{{item.name}}</td>
+          <td style="border: 1px solid black">{{item.score}}</td>
+          <td style="border: 1px solid black">
+            {{item.listened_secs|fmt_secs_to_hhmm}}
+          </td>
+        </tr>
+        {%- endfor %}
+      </table>
+    </main>
+    <footer
+      class="absolute bottom-0 w-full text-left bg-gray-800/5 border-gray-200 text-xs px-3 py-2 pin-b text-gray-200"
+    >
+      &copy;2022 - a
+      <a href="https://pavonz.com" target="_blank" rel="noopener noreferrer"
+        >pavonz</a
+      >
+      joint -
+      <a
+        href="https://github.com/andreapavoni/SCROBBLIFY"
+        target="_blank"
+        rel="noopener noreferrer"
+        >src</a
+      >
+    </footer>
+  </body>
+</html>
