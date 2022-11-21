@@ -8,83 +8,270 @@
     <meta name="keywords" content="pavonz, web radio, spotify, music" />
     <meta name="author" content="Andrea 'pavonz' Pavoni" />
     <meta name="og:title" property="og:title" content="[DESCRIPTION]" />
-    <title data-suffix="">listen.funky.studio</title>
-    <link rel="stylesheet" href="/assets/app.css" />
-    <script defer type="text/javascript" src="/assets/app.js"></script>
+
+    <title data-suffix="">music.funky.studio</title>
+    <link rel="stylesheet" href="/assets/css/app.css" />
+    <script defer type="text/javascript" src="/assets/js/app.js"></script>
   </head>
-  <body>
-    <main class="container">
-      <h1>TOP TRACKS</h1>
+  <body
+    class="bg-black-alt font-sans leading-normal tracking-normal text-gray-400"
+  >
+    <header id="header" class="bg-gray-900 w-full top-0 shadow">
+      <nav
+        class="w-full container mx-auto flex flex-wrap items-center mt-0 pt-3 pb-3 md:pb-0"
+      >
+        <!--Logo-->
+        <div class="w-1/2 pl-2 md:pl-0">
+          <a
+            class="text-gray-100 text-base xl:text-xl no-underline hover:no-underline font-bold"
+            href="#"
+          >
+            Scrobblify
+          </a>
+        </div>
+        <!--/Logo-->
+        <div class="w-1/2 pr-0"></div>
 
-      <table style="width: 100%; border: 1px solid black">
-        <tr>
-          <th style="border: 1px solid black">TITLE</th>
-          <th style="border: 1px solid black">SCORE</th>
-          <th style="border: 1px solid black">LISTENED (HH:MM)</th>
-        </tr>
-        {%- for item in top_tracks %}
-        <tr>
-          <td style="border: 1px solid black">{{item.title}}</td>
-          <td style="border: 1px solid black">{{item.score}}</td>
-          <td style="border: 1px solid black">
-            {{item.listened_secs|fmt_secs_to_hhmm}}
-          </td>
-        </tr>
-        {%- endfor %}
-      </table>
+        <!--Menu-->
+        <div
+          class="w-full flex-grow lg:flex lg:items-center lg:w-auto hidden mt-2 lg:mt-0 bg-gray-900 z-20"
+          id="nav-content"
+        >
+          <ul class="list-reset lg:flex flex-1 items-center md:px-0">
+            <li class="mr-6 my-2 md:my-0">
+              <a
+                href="#"
+                class="block py-1 md:py-3 pl-1 align-middle text-blue-400 no-underline hover:text-gray-100 border-b-2 border-blue-400 hover:border-blue-400"
+              >
+                <span class="pb-1 md:pb-0 text-sm">Home</span>
+              </a>
+            </li>
+            <li class="mr-6 my-2 md:my-0">
+              <a
+                href="#"
+                class="block py-1 md:py-3 pl-1 align-middle text-gray-500 no-underline hover:text-gray-100 border-b-2 border-gray-900 hover:border-pink-400"
+              >
+                <span class="pb-1 md:pb-0 text-sm">Tasks</span>
+              </a>
+            </li>
+            <li class="mr-6 my-2 md:my-0">
+              <a
+                href="#"
+                class="block py-1 md:py-3 pl-1 align-middle text-gray-500 no-underline hover:text-gray-100 border-b-2 border-gray-900 hover:border-purple-400"
+              >
+                <span class="pb-1 md:pb-0 text-sm">Messages</span>
+              </a>
+            </li>
+            <li class="mr-6 my-2 md:my-0">
+              <a
+                href="#"
+                class="block py-1 md:py-3 pl-1 align-middle text-gray-500 no-underline hover:text-gray-100 border-b-2 border-gray-900 hover:border-green-400"
+              >
+                <span class="pb-1 md:pb-0 text-sm">Analytics</span>
+              </a>
+            </li>
+            <li class="mr-6 my-2 md:my-0">
+              <a
+                href="#"
+                class="block py-1 md:py-3 pl-1 align-middle text-gray-500 no-underline hover:text-gray-100 border-b-2 border-gray-900 hover:border-red-400"
+              >
+                <span class="pb-1 md:pb-0 text-sm">Payments</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <!--/Menu-->
+      </nav>
+    </header>
 
-      <h1>TOP TAGS</h1>
+    <main class="container w-full mx-auto">
+      <div class="w-full md:px-0 md:mt-8 mb-16 leading-normal">
+        <!--Metrics-->
+        <div class="flex flex-wrap">
+          <div class="w-full md:w-1/2 xl:w-1/3 py-3">
+            <!--Metric Card-->
+            <div class="bg-gray-900 border border-gray-800 rounded shadow p-2">
+              <div class="flex flex-row items-center">
+                <div class="flex-1 text-right md:text-center">
+                  <h5 class="font-bold uppercase text-gray-400">
+                    Total listening time
+                  </h5>
+                  <h3 class="font-bold text-3xl text-gray-600">
+                    92 H 36 M
+                    <span class="text-green-500"></span>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <!--/Metric Card-->
+          </div>
+          <div class="w-full md:w-1/2 xl:w-1/3 py-3 lg:px-3 lg:py-3">
+            <!--Metric Card-->
+            <div class="bg-gray-900 border border-gray-800 rounded shadow p-2">
+              <div class="flex flex-row items-center">
+                <div class="flex-1 text-right md:text-center">
+                  <h5 class="font-bold uppercase text-gray-400">Tracks</h5>
+                  <h3 class="font-bold text-3xl text-gray-600">
+                    249
+                    <span class="text-pink-500"></span>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <!--/Metric Card-->
+          </div>
+          <div class="w-full md:w-1/2 xl:w-1/3 py-3">
+            <!--Metric Card-->
+            <div class="bg-gray-900 border border-gray-800 rounded shadow p-2">
+              <div class="flex flex-row items-center">
+                <div class="flex-1 text-right md:text-center">
+                  <h5 class="font-bold uppercase text-gray-400">Genres</h5>
+                  <h3 class="font-bold text-3xl text-gray-600">
+                    12
+                    <span class="text-yellow-600"></span>
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <!--/Metric Card-->
+          </div>
+        </div>
+        <!--/Metrics-->
 
-      <table style="width: 100%; border: 1px solid black">
-        <tr>
-          <th style="border: 1px solid black">NAME</th>
-          <th style="border: 1px solid black">SCORE</th>
-          <th style="border: 1px solid black">LISTENED (HH:MM)</th>
-        </tr>
-        {%- for item in top_tags %}
-        <tr>
-          <td style="border: 1px solid black">{{item.name}}</td>
-          <td style="border: 1px solid black">{{item.score}}</td>
-          <td style="border: 1px solid black">
-            {{item.listened_secs|fmt_secs_to_hhmm}}
-          </td>
-        </tr>
-        {%- endfor %}
-      </table>
+        <div class="flex flex-row flex-wrap flex-grow mt-2">
+          <!--Top Tracks-->
+          <div class="w-full md:w-1/3 py-3">
+            <div class="bg-gray-900 border border-gray-800 rounded shadow">
+              <div class="border-b border-gray-800 p-3">
+                <h5 class="font-bold uppercase text-gray-600">Top Tracks</h5>
+              </div>
+              <div class="p-5 pt-2">
+                <table class="w-full pt-0">
+                  <tbody>
+                    {%- for item in top_tracks %}
+                    <tr>
+                      <td class="py-3">
+                        <div class="flex items-center text-sm">
+                          <!-- Avatar with inset shadow -->
+                          <div
+                            class="relative hidden w-8 h-8 mr-3 rounded-full md:block"
+                          >
+                            <img
+                              class="object-cover w-full h-full"
+                              src="{{item.cover}}"
+                              alt=""
+                              loading="lazy"
+                            />
+                            <div
+                              class="absolute inset-0 rounded-full shadow-inner"
+                              aria-hidden="true"
+                            ></div>
+                          </div>
+                          <div>
+                            <p class="font-semibold">{{item.title}}</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
+                              {{item.artists}}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    {%- endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!--/Top Tracks-->
 
-      <h1>TOP ARTISTS</h1>
+          <div class="w-full md:w-1/3 py-3 lg:px-3">
+            <!--Top Artists-->
+            <div class="bg-gray-900 border border-gray-800 rounded shadow">
+              <div class="border-b border-gray-800 p-3">
+                <h5 class="font-bold uppercase text-gray-600">Top Artists</h5>
+              </div>
+              <div class="p-5 pt-2">
+                <table class="w-full">
+                  <tbody>
+                    {%- for item in top_artists %}
+                    <tr>
+                      <td class="py-3">
+                        <div class="flex items-center text-sm">
+                          <!-- Avatar with inset shadow -->
+                          <div
+                            class="relative hidden w-8 h-8 mr-3 rounded-full md:block"
+                          >
+                            <img
+                              class="object-cover w-full h-full"
+                              src="#"
+                              alt=""
+                              loading="lazy"
+                            />
+                            <div
+                              class="absolute inset-0 rounded-full shadow-inner"
+                              aria-hidden="true"
+                            ></div>
+                          </div>
+                          <div>
+                            <p class="font-semibold">{{item.name}}</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
+                              tracks: {{item.tracks}}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    {%- endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <!--/TopArtists-->
+          </div>
 
-      <table style="width: 100%; border: 1px solid black">
-        <tr>
-          <th style="border: 1px solid black">NAME</th>
-          <th style="border: 1px solid black">SCORE</th>
-          <th style="border: 1px solid black">LISTENED (HH:MM)</th>
-        </tr>
-        {%- for item in top_artists %}
-        <tr>
-          <td style="border: 1px solid black">{{item.name}}</td>
-          <td style="border: 1px solid black">{{item.score}}</td>
-          <td style="border: 1px solid black">
-            {{item.listened_secs|fmt_secs_to_hhmm}}
-          </td>
-        </tr>
-        {%- endfor %}
-      </table>
+          <div class="w-full md:w-1/3 py-3">
+            <div class="border-b border-gray-800 p-3">
+              <h5 class="font-bold uppercase text-gray-600">Top Tags</h5>
+            </div>
+            <!--Top Tags-->
+            <div class="bg-gray-900 border border-gray-800 rounded shadow p-3">
+              {%- for item in top_tags %}
+              <div class="w-full mb-6">
+                <div
+                  class="bg-blue-500 text-xs shadow shadow-blue-300 leading-none py-1 text-white h-9 mb-2 text-left pl-2 rounded-r"
+                  style="width: {{ item.score }}%"
+                >
+                  <span
+                    class="w-full z-10 absolute text-xl"
+                    title="{{ item.score }}%"
+                    >{{item.name}}</span
+                  >
+                </div>
+              </div>
+
+              {%- endfor %}
+            </div>
+            <!--/TopTags-->
+          </div>
+        </div>
+      </div>
     </main>
-    <footer
-      class="absolute bottom-0 w-full text-left bg-gray-800/5 border-gray-200 text-xs px-3 py-2 pin-b text-gray-200"
-    >
-      &copy;2022 - a
-      <a href="https://pavonz.com" target="_blank" rel="noopener noreferrer"
-        >pavonz</a
-      >
-      joint -
-      <a
-        href="https://github.com/andreapavoni/SCROBBLIFY"
-        target="_blank"
-        rel="noopener noreferrer"
-        >src</a
-      >
+    <footer class="bg-gray-900 border-t border-gray-400 shadow py-2">
+      <div class="w-full container mx-auto flex flex-wrap items-center mt-0">
+        <p>
+          &copy;2022 - a
+          <a href="https://pavonz.com" target="_blank" rel="noopener noreferrer"
+            >pavonz</a
+          >
+          joint -
+          <a
+            href="https://github.com/andreapavoni/SCROBBLIFY"
+            target="_blank"
+            rel="noopener noreferrer"
+            >src</a
+          >
+        </p>
+      </div>
     </footer>
   </body>
 </html>

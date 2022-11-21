@@ -84,7 +84,7 @@ async fn index_handler(State(app): State<App>) -> Response {
 
     let opts = ParamsForStatsQuery {
         start: NaiveDate::from_ymd(2022, 11, 1),
-        end: NaiveDate::from_ymd(2022, 11, 15),
+        end: NaiveDate::from_ymd(2022, 11, 18),
         limit: None,
     };
 
@@ -168,14 +168,14 @@ struct ErrorTemplate {
 }
 
 pub mod filters {
-    use std::time::Duration;
+    // use std::time::Duration;
 
-    use crate::utils::secs_to_hours_and_minutes;
+    // use crate::utils::secs_to_hours_and_minutes;
 
-    pub fn fmt_secs_to_hhmm(d: &f64) -> askama::Result<String> {
-        let duration_secs = Duration::from_secs_f64(*d);
-        let (hours, minutes) = secs_to_hours_and_minutes(duration_secs);
+    // pub fn fmt_secs_to_hhmm(d: &f64) -> askama::Result<String> {
+    //     let duration_secs = Duration::from_secs_f64(*d);
+    //     let (hours, minutes) = secs_to_hours_and_minutes(duration_secs);
 
-        Ok(format!("{:02}:{:02}", hours, minutes))
-    }
+    //     Ok(format!("{:02} H {:02} M", hours, minutes))
+    // }
 }

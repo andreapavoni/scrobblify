@@ -52,7 +52,7 @@ impl scrobblify_domain::app::App for App {
 
     // Scrobbling
     async fn scrobble(&self, scrobble: ScrobbleInfo) -> Result<()> {
-        let mut track_info = scrobble.track;
+        let mut track_info = scrobble.clone().track;
 
         // if a track is already on db, we don't need to fetch tags and insert stuff on db again
         if let Ok(None) = self.db.get_track_by_id(track_info.clone().id).await {
@@ -72,7 +72,7 @@ impl scrobblify_domain::app::App for App {
 
             self.db.insert_album(track_info.album.clone()).await?;
         }
-        self.db.insert_scrobble(track_info.clone()).await?;
+        self.db.insert_scrobble(scrobble.clone()).await?;
 
         Ok(())
     }

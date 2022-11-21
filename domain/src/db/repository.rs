@@ -2,7 +2,7 @@ use anyhow::Result;
 use chrono::{NaiveDate, Utc};
 
 use crate::models::{
-    Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo,
+    Album, Artist, Scrobble, ScrobbleInfo, StatsArtist, StatsTag, StatsTrack, Tag, Track,
 };
 
 #[derive(Clone, Debug)]
@@ -38,7 +38,7 @@ pub trait Repository: Send + Sync {
     async fn insert_tag(&self, tag: Tag) -> Result<()>;
 
     // Scrobbles
-    async fn insert_scrobble(&self, track_info: TrackInfo) -> Result<()>;
+    async fn insert_scrobble(&self, scrobble: ScrobbleInfo) -> Result<()>;
     async fn get_last_scrobble(&self) -> Result<Option<Scrobble>>;
     async fn list_scrobbles_by_date_range(&self, opts: ParamsForStatsQuery) -> Vec<Scrobble>;
     async fn list_scrobbles_by_tag(&self, tag: &str) -> Vec<Scrobble>;

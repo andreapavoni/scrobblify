@@ -146,7 +146,7 @@ impl SpotifyApi for SpotifyClient {
 
         let items = self
             .0
-            .current_user_recently_played(Some(100), Some(time_limit))
+            .current_user_recently_played(Some(50), Some(time_limit))
             .await?
             .items;
 

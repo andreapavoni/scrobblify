@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "watch": "NODE_ENV=production node build.js --deploy",
+    "watch": "node build.js --watch",
     "deploy": "NODE_ENV=production node build.js --deploy",
-    "dev": "node build.js"
+    "build": "node build.js"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.13",

@@ -6,10 +6,11 @@ const watch = args.includes("--watch");
 const deploy = args.includes("--deploy");
 
 let opts = {
-  entryPoints: ["css/app.css"],
+  entryPoints: ["js/app.js", "css/app.css"],
   outdir: "../web/assets",
   bundle: true,
   sourcemap: "inline",
+  logLevel: "info",
   plugins: [
     postCssPlugin({
       postcss: {

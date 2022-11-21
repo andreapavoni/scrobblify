@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, NaiveDateTime};
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, DbBackend,
     EntityTrait, FromQueryResult, Statement,
@@ -9,7 +9,10 @@ use std::{env, str::FromStr, time::Duration};
 use scrobblify_domain::{
     self,
     db::ParamsForStatsQuery,
-    models::{Album, Artist, Scrobble, StatsArtist, StatsTag, StatsTrack, Tag, Track, TrackInfo},
+    models::{
+        Album, Artist, Scrobble, ScrobbleInfo, StatsArtist, StatsTag, StatsTrack, Tag, Track,
+        TrackInfo,
+    },
 };
 
 use crate::entities::{
@@ -57,7 +60,7 @@ struct ScrobbleQueryResult {
     cover: String,
     artists: String,
     album: String,
-    tags: String,
+    tags: Option<String>,
     timestamp: String,
 }
 
@@ -65,7 +68,6 @@ struct ScrobbleQueryResult {
 struct PopularTagQueryResult {
     tag: String,
     score: u32,
-    listened_secs: f64,
 }
 
 #[derive(Debug, FromQueryResult)]
@@ -74,6 +76,8 @@ struct PopularTrackQueryResult {
     title: String,
     score: u32,
     listened_secs: f64,
+    cover: String,
+    artists: String,
 }
 
 #[derive(Debug, FromQueryResult)]
@@ -81,7 +85,7 @@ struct PopularArtistQueryResult {
     id: String,
     name: String,
     score: u32,
-    listened_secs: f64,
+    tracks: u32,
 }
 
 #[async_trait::async_trait]
@@ -165,9 +169,10 @@ impl scrobblify_domain::db::Repository for Repository {
         Ok(())
     }
 
-    async fn insert_scrobble(&self, track_info: TrackInfo) -> Result<()> {
+    async fn insert_scrobble(&self, scrobble: ScrobbleInfo) -> Result<()> {
+        let track_info = scrobble.clone().track;
         let scrobble = ScrobblesModel {
-            timestamp: ActiveValue::Set(Utc::now().to_string()),
+            timestamp: ActiveValue::Set(scrobble.timestamp.to_string()),
             origin: ActiveValue::Set(String::from("spotify")),
             duration_secs: ActiveValue::Set(track_info.duration_secs.as_secs_f64()),
             track_id: ActiveValue::Set(track_info.clone().id),
@@ -248,7 +253,7 @@ impl scrobblify_domain::db::Repository for Repository {
             Ok(scrobbles) => scrobbles.into_iter().map(|s| s.into()).collect(),
             Err(err) => {
                 tracing::error!(
-                    msg = "list scrobbles by artist query error",
+                    msg = "list_scrobbles_by_artist_query",
                     error = format!("{:?}", err)
                 );
                 vec![]
@@ -274,10 +279,7 @@ impl scrobblify_domain::db::Repository for Repository {
         {
             Ok(tracks) => tracks.into_iter().map(|t| t.into()).collect(),
             Err(err) => {
-                tracing::error!(
-                    msg = "popular tags query error",
-                    error = format!("{:?}", err)
-                );
+                tracing::error!(msg = "popular_tags_query", error = format!("{:?}", err));
                 vec![]
             }
         }
@@ -301,10 +303,7 @@ impl scrobblify_domain::db::Repository for Repository {
         {
             Ok(tracks) => tracks.into_iter().map(|t| t.into()).collect(),
             Err(err) => {
-                tracing::error!(
-                    msg = "popular tracks query error",
-                    error = format!("{:?}", err)
-                );
+                tracing::error!(msg = "popular_tracks_query", error = format!("{:?}", err));
                 vec![]
             }
         }
@@ -328,10 +327,7 @@ impl scrobblify_domain::db::Repository for Repository {
         {
             Ok(tracks) => tracks.into_iter().map(|t| t.into()).collect(),
             Err(err) => {
-                tracing::error!(
-                    msg = "popular artists query error",
-                    error = format!("{:?}", err)
-                );
+                tracing::error!(msg = "popular_artists_query", error = format!("{:?}", err));
                 vec![]
             }
         }
@@ -453,13 +449,16 @@ impl From<ScrobbleQueryResult> for Scrobble {
                 .into_iter()
                 .map(|t| t.to_string())
                 .collect(),
-            tags: s
-                .tags
-                .as_str()
-                .split(',')
-                .into_iter()
-                .map(|t| t.to_string())
-                .collect(),
+            tags: s.tags.map_or_else(
+                || vec![],
+                |t| {
+                    t.as_str()
+                        .split(',')
+                        .into_iter()
+                        .map(|t| t.to_string())
+                        .collect()
+                },
+            ),
         }
     }
 }
@@ -469,7 +468,6 @@ impl From<PopularTagQueryResult> for StatsTag {
         Self {
             name: t.tag,
             score: t.score,
-            listened_secs: t.listened_secs,
         }
     }
 }
@@ -481,6 +479,8 @@ impl From<PopularTrackQueryResult> for StatsTrack {
             title: t.title,
             score: t.score,
             listened_secs: t.listened_secs,
+            cover: t.cover,
+            artists: t.artists,
         }
     }
 }
@@ -491,7 +491,7 @@ impl From<PopularArtistQueryResult> for StatsArtist {
             id: t.id,
             name: t.name,
             score: t.score,
-            listened_secs: t.listened_secs,
+            tracks: t.tracks,
         }
     }
 }

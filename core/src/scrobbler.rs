@@ -33,7 +33,7 @@ impl Scrobbler {
 
             loop {
                 if let Err(err) = Self::auto_scrobble(app.clone()).await {
-                    tracing::error!(msg = "error while scrobbling", error = format!("{:?}", err))
+                    tracing::error!(msg = "auto_scrobble", error = format!("{:?}", err));
                 }
                 let duration = Duration::new(SPOTIFY_POLLING_SECS, 0);
                 sleep(duration).await;
@@ -43,18 +43,25 @@ impl Scrobbler {
 
     pub async fn scrobble_recently_played(app: Arc<Mutex<App>>) {
         tracing::info!(msg = "check recently played tracks");
-        if let Ok(recently_played) = app.lock().await.get_recently_played().await {
-            for played in recently_played {
-                let scrobble = ScrobbleInfo {
-                    timestamp: played.played_at,
-                    duration_secs: played.track.duration_secs.as_secs_f64(),
-                    track: played.track,
-                };
-
-                log_scrobbling(&scrobble.clone(), "scrobble recently played");
-                let _ = app.lock().await.scrobble(scrobble).await;
+        let mut recently_played = match app.clone().lock().await.get_recently_played().await {
+            Ok(rp) => rp,
+            Err(err) => {
+                tracing::error!(msg = "recently_played", error = format!("{:?}", err));
+                return ();
             }
         };
+
+        recently_played.reverse();
+        for played in recently_played {
+            let scrobble = ScrobbleInfo {
+                timestamp: played.played_at,
+                duration_secs: played.track.duration_secs.as_secs_f64(),
+                track: played.track,
+            };
+
+            log_scrobbling(&scrobble.clone(), "recently_played");
+            let _ = app.clone().lock().await.scrobble(scrobble).await;
+        }
     }
 
     async fn auto_scrobble(app: Arc<Mutex<App>>) -> Result<()> {
@@ -171,6 +178,7 @@ fn log_scrobbling(scrobble: &ScrobbleInfo, msg: &str) {
         .map(|a| a.name)
         .collect::<Vec<String>>()
         .join(", ");
+    let timestamp = format!("{}", scrobble.clone().timestamp.format("%Y/%m/%d %H:%M"));
 
-    tracing::info!(msg, title = title, artists = artists,);
+    tracing::info!(msg, title = title, artists = artists, timestamp = timestamp,);
 }

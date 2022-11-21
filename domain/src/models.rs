@@ -93,7 +93,6 @@ pub struct Artist {
 pub struct StatsTag {
     pub name: String,
     pub score: u32,
-    pub listened_secs: f64,
 }
 
 #[derive(Clone, Debug)]
@@ -102,11 +101,13 @@ pub struct StatsTrack {
     pub title: String,
     pub score: u32,
     pub listened_secs: f64,
+    pub cover: String,
+    pub artists: String,
 }
 #[derive(Clone, Debug)]
 pub struct StatsArtist {
     pub id: String,
     pub name: String,
     pub score: u32,
-    pub listened_secs: f64,
+    pub tracks: u32,
 }

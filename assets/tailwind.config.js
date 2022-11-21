@@ -2,8 +2,7 @@
 module.exports = {
   mode: "jit",
   content: ["../web/**/*.{html,js}"],
-  theme: {
-    extend: {},
-  },
+  theme: {},
+  variants: {},
   plugins: [],
 };
